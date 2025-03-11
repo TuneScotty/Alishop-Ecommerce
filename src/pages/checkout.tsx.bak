@@ -1,0 +1,543 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import Image from 'next/image';
+import axios from 'axios';
+import Layout from '../components/Layout';
+import { useNotification } from '../context/NotificationContext';
+import { useCart } from '../context/CartContext';
+import TranzilaPaymentForm from '../components/TranzilaPaymentForm';
+import { SimpleCartItem } from '../context/CartContext';
+
+// Define interfaces for our data structures
+interface ShippingAddress {
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
+interface PaymentDetails {
+  name: string;
+  email: string;
+  phone: string;
+  paymentMethodId: string;
+}
+
+// Define interfaces for Tranzila integration
+interface TranzilaHostedFieldsProps {
+  onSuccess: (token: string) => void;
+  onError: (message: string) => void;
+}
+
+// Add TypeScript interface for window with Tranzila
+declare global {
+  interface Window {
+    TranzilaHostedFields?: any;
+  }
+}
+
+// Tranzila integration component
+const TranzilaHostedFields: React.FC<TranzilaHostedFieldsProps> = ({ onSuccess, onError }) => {
+  useEffect(() => {
+    // Load Tranzila script
+    const script = document.createElement('script');
+    script.src = 'https://secure.tranzila.com/hosted-fields/v1.0/tranzila-hosted-fields.js';
+    script.async = true;
+    script.onload = initializeTranzila;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  const initializeTranzila = () => {
+    if (window.TranzilaHostedFields) {
+      const tranzilaFields = window.TranzilaHostedFields.create({
+        terminal: 'your_terminal_name', // Replace with your Tranzila terminal name
+        language: 'he', // Hebrew language
+        styles: {
+          base: {
+            color: '#32325d',
+            fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': {
+              color: '#aab7c4'
+            }
+          },
+          invalid: {
+            color: '#fa755a',
+            iconColor: '#fa755a'
+          }
+        }
+      });
+
+      tranzilaFields.mount('#tranzila-hosted-fields-container');
+
+      // Handle form submission
+      const form = document.getElementById('payment-form');
+      if (form) {
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          
+          try {
+            const result = await tranzilaFields.createToken();
+            if (result.token) {
+              onSuccess(result.token);
+            } else {
+              onError('Payment processing failed. Please try again.');
+            }
+          } catch (error) {
+            if (error instanceof Error) {
+              onError(error.message);
+            } else {
+              onError('Payment processing failed. Please try again.');
+            }
+          }
+        });
+      }
+    }
+  };
+
+  return (
+    <div>
+      <form id="payment-form" className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="card-number" className="block text-sm font-medium text-gray-700">
+            מספר כרטיס
+          </label>
+          <div id="tranzila-hosted-fields-container" className="p-3 border border-gray-300 rounded-md">
+            {/* Tranzila will inject secure fields here */}
+            <div id="card-number" className="h-10"></div>
+            <div className="grid grid-cols-2 gap-4 mt-3">
+              <div>
+                <label htmlFor="expiry" className="block text-sm font-medium text-gray-700">
+                  תוקף
+                </label>
+                <div id="expiry" className="h-10 mt-1"></div>
+              </div>
+              <div>
+                <label htmlFor="cvv" className="block text-sm font-medium text-gray-700">
+                  CVV
+                </label>
+                <div id="cvv" className="h-10 mt-1"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          type="submit"
+          className="btn btn-primary btn-large"
+        >
+          Continue to Payment →
+        </button>
+      </form>
+      
+      {/* Security badges */}
+      <div className="mt-6 flex flex-col items-center space-y-3">
+        <div className="flex items-center space-x-2 bg-gray-100 p-3 rounded-lg w-full">
+          <div className="text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium">מאובטח בתקן PCI-DSS</p>
+            <p className="text-xs text-gray-500">כל הנתונים מוצפנים ומאובטחים</p>
+          </div>
+        </div>
+        <div className="flex justify-center space-x-4">
+          <div className="h-10 w-16 relative">
+            <Image src="/images/visa.png" alt="Visa" layout="fill" objectFit="contain" />
+          </div>
+          <div className="h-10 w-16 relative">
+            <Image src="/images/mastercard.png" alt="Mastercard" layout="fill" objectFit="contain" />
+          </div>
+          <div className="h-10 w-16 relative">
+            <Image src="/images/tranzila-logo.png" alt="Tranzila" layout="fill" objectFit="contain" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function CheckoutPage() {
+  const router = useRouter();
+  const { cart, clearCart } = useCart();
+  const { showNotification } = useNotification();
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Shipping address state
+  const [shippingAddress, setShippingAddress] = useState({
+    address: '',
+    city: '',
+    postalCode: '',
+    country: 'Israel',
+  });
+  
+  // Load saved address from localStorage if available
+  useEffect(() => {
+    const savedAddress = localStorage.getItem('userAddress');
+    if (savedAddress) {
+      try {
+        const addressData = JSON.parse(savedAddress);
+        setShippingAddress(addressData);
+      } catch (e) {
+        console.error('Error parsing saved address:', e);
+      }
+    }
+  }, []);
+  
+  // Calculate order summary
+  const itemsPrice = cart.reduce((acc: number, item: SimpleCartItem) => acc + item.price * item.quantity, 0);
+  const shippingPrice = itemsPrice > 100 ? 0 : 10;
+  const taxPrice = Number((0.17 * itemsPrice).toFixed(2)); // 17% VAT in Israel
+  const totalPrice = itemsPrice + shippingPrice + taxPrice;
+  
+  const handleShippingAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setShippingAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  
+  const handleNextStep = () => {
+    // Validate shipping address
+    if (!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country) {
+      setError('Please fill in all shipping address fields');
+      return;
+    }
+    
+    // Save address to localStorage
+    localStorage.setItem('userAddress', JSON.stringify(shippingAddress));
+    
+    // Show notification
+    showNotification('Shipping address saved', 'success');
+    
+    // Move to next step
+    setStep(2);
+  };
+  
+  const handlePaymentSuccess = async (paymentDetails: {
+    cardNumber: string;
+    expMonth: string;
+    expYear: string;
+    cvv: string;
+    holderId?: string;
+    name: string;
+    email: string;
+    phone: string;
+  }) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      // Validate shipping address
+      if (!shippingAddress.address || !shippingAddress.city || !shippingAddress.postalCode || !shippingAddress.country) {
+        setError('Please fill in all shipping address fields');
+        setLoading(false);
+        return;
+      }
+
+      // Create order
+      const { data } = await axios.post('/api/orders', {
+        orderItems: cart.map((item: SimpleCartItem) => ({
+          name: item.name,
+          quantity: item.quantity,
+          image: item.image,
+          price: item.price,
+          product: item._id,
+        })),
+        shippingAddress,
+        paymentMethod: 'Tranzila',
+        itemsPrice,
+        taxPrice,
+        shippingPrice,
+        totalPrice,
+        paymentDetails,
+      });
+
+      // Clear cart and redirect to order confirmation
+      clearCart();
+      router.push(`/orders/${data._id}`);
+    } catch (error: any) {
+      setError(error.response?.data?.message || 'An error occurred during checkout');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handlePaymentError = (errorMessage: string) => {
+    setError(errorMessage);
+    setLoading(false);
+  };
+  
+  return (
+    <Layout title="AliShop - Checkout" description="Complete your purchase">
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-8 text-center">Checkout</h1>
+          
+          {/* Checkout Steps */}
+          <div className="flex justify-center mb-8">
+            <div className="flex items-center">
+              <div className={`rounded-full h-10 w-10 flex items-center justify-center ${
+                step >= 1 ? 'bg-primary-main text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                1
+              </div>
+              <div className={`h-1 w-16 ${
+                step >= 2 ? 'bg-primary-main' : 'bg-gray-200'
+              }`}></div>
+              <div className={`rounded-full h-10 w-10 flex items-center justify-center ${
+                step >= 2 ? 'bg-primary-main text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                2
+              </div>
+              <div className={`h-1 w-16 ${
+                step >= 3 ? 'bg-primary-main' : 'bg-gray-200'
+              }`}></div>
+              <div className={`rounded-full h-10 w-10 flex items-center justify-center ${
+                step >= 3 ? 'bg-primary-main text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                3
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="md:col-span-2">
+              {step === 1 && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-bold mb-4">Shipping Address</h2>
+                  
+                  {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                      {error}
+                    </div>
+                  )}
+                  
+                  <form onSubmit={handleNextStep}>
+                    <div className="space-y-4">
+                      <div>
+                        <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                          Address
+                        </label>
+                        <input
+                          type="text"
+                          id="address"
+                          value={shippingAddress.address}
+                          onChange={handleShippingAddressChange}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                            City
+                          </label>
+                          <input
+                            type="text"
+                            id="city"
+                            value={shippingAddress.city}
+                            onChange={handleShippingAddressChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
+                            Postal Code
+                          </label>
+                          <input
+                            type="text"
+                            id="postalCode"
+                            value={shippingAddress.postalCode}
+                            onChange={handleShippingAddressChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                            required
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="country" className="block text-sm font-medium text-gray-700">
+                          Country
+                        </label>
+                        <input
+                          type="text"
+                          id="country"
+                          value={shippingAddress.country}
+                          onChange={handleShippingAddressChange}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="flex justify-between pt-4">
+                        <Link href="/cart" className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                          Back to Cart
+                        </Link>
+                        
+                        <button
+                          type="submit"
+                          className="inline-flex items-center px-6 py-3 border border-transparent shadow-md text-base font-medium rounded-md text-white bg-primary-dark hover:bg-primary-main focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-main transition-colors"
+                        >
+                          Continue to Payment
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              )}
+              
+              {step === 2 && (
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                  <h2 className="text-xl font-bold mb-4">Payment Information</h2>
+                  
+                  {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                      {error}
+                    </div>
+                  )}
+                  
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        value={shippingAddress.name}
+                        onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                          Email
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          value={shippingAddress.email}
+                          onChange={(e) => setShippingAddress({ ...shippingAddress, email: e.target.value })}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                          Phone
+                        </label>
+                        <input
+                          type="tel"
+                          id="phone"
+                          value={shippingAddress.phone}
+                          onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
+                          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-main focus:border-primary-main"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t border-gray-200 pt-6">
+                    <h3 className="text-lg font-medium mb-4">תשלום מאובטח</h3>
+                    
+                    {/* Tranzila Hosted Fields Component */}
+                    <TranzilaHostedFields
+                      onSuccess={handlePaymentSuccess}
+                      onError={handlePaymentError}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-between mt-6">
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      Back to Shipping
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="md:col-span-1">
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h2 className="text-xl font-bold mb-4">Order Summary</h2>
+                
+                <div className="space-y-4">
+                  {cart.map((item) => (
+                    <div key={item._id} className="flex items-center space-x-4">
+                      <div className="w-16 h-16 bg-gray-200 rounded-md overflow-hidden">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium">{item.name}</h3>
+                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      </div>
+                      <div className="text-sm font-medium">
+                        ${(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="border-t border-gray-200 mt-6 pt-4 space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Subtotal</span>
+                    <span className="text-sm font-medium">${itemsPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Shipping</span>
+                    <span className="text-sm font-medium">${shippingPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Tax (17% VAT)</span>
+                    <span className="text-sm font-medium">${taxPrice.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-gray-200 pt-2">
+                    <span className="text-base font-medium">Total</span>
+                    <span className="text-base font-bold">${totalPrice.toFixed(2)}</span>
+                  </div>
+                </div>
+                
+                {/* Security badge */}
+                <div className="mt-6 p-3 bg-green-50 border border-green-100 rounded-md flex items-center space-x-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Secure Checkout</p>
+                    <p className="text-xs text-green-600">Your payment information is encrypted</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+} 
