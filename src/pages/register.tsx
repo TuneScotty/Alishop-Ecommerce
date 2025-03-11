@@ -25,7 +25,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { data } = await axios.post('/api/users', {
+      const { data } = await axios.post('/api/auth/register', {
         name,
         email,
         password,
@@ -39,9 +39,8 @@ export default function RegisterPage() {
       router.push(redirect);
     } catch (error: any) {
       setError(
-        error.response && error.response.data.message
-          ? error.response.data.message
-          : 'Registration failed'
+        error.response?.data?.message ||
+        'Registration failed. Please try again.'
       );
     } finally {
       setLoading(false);
