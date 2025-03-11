@@ -5,20 +5,19 @@ interface ConnectionCache {
   promise: Promise<typeof mongoose> | null;
 }
 
-// Cache the mongoose connection to reuse it across API calls
 const MONGODB_URI = process.env.MONGODB_URI;
 
 // Check if MONGODB_URI is defined, but don't throw an error immediately
 // This allows the application to start even if the environment variable is missing
 if (!MONGODB_URI) {
-  console.error('Warning: MONGODB_URI environment variable is not defined. Please add it to your .env.local file.');
-  // Try to load from .env.local directly if running on server
+  console.error('Warning: MONGODB_URI environment variable is not defined. Please add it to your .env file.');
+  // Try to load from .env directly if running on server
   if (typeof window === 'undefined') {
     try {
       const dotenv = require('dotenv');
-      dotenv.config({ path: '.env.local' });
+      dotenv.config({ path: '.env' });
     } catch (error) {
-      console.error('Error loading .env.local file:', error);
+      console.error('Error loading .env file:', error);
     }
   }
 }
@@ -35,17 +34,8 @@ if (!cached) {
 }
 
 async function connectDB() {
-  // Skip MongoDB connection on client side
   if (typeof window !== 'undefined') {
-    console.log('Skipping MongoDB connection on client side');
     return null;
-  }
-
-  // If no MongoDB URI is provided, return early with a clear error
-  if (!process.env.MONGODB_URI) {
-    throw new Error(
-      'MongoDB connection failed: MONGODB_URI environment variable is not defined. Please add it to your .env.local file.'
-    );
   }
 
   if (cached.conn) {
@@ -55,9 +45,21 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 10000,
     };
 
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
+    if (!MONGODB_URI) {
+      throw new Error(
+        'MongoDB connection failed: No MongoDB URI defined. Please check your environment variables.'
+      );
+    }
+
+    // Log which environment we're connecting to
+    const isProduction = process.env.NODE_ENV === 'production';
+    console.log(`Connecting to MongoDB (${isProduction ? 'production' : 'development'})...`);
+    
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       console.log('MongoDB connected successfully');
       return mongoose;
     });

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import axios from 'axios';
+import { signIn } from 'next-auth/react';
 import Layout from '../components/Layout';
 
 export default function RegisterPage() {
@@ -12,6 +13,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [registered, setRegistered] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,24 +27,38 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      // Register the user
       const { data } = await axios.post('/api/auth/register', {
         name,
         email,
         password,
       });
       
-      // Store user info in localStorage
-      localStorage.setItem('userInfo', JSON.stringify(data));
+      setRegistered(true);
       
-      // Redirect to the previous page or home
-      const redirect = router.query.redirect as string || '/';
-      router.push(redirect);
+      // Sign in the user with NextAuth
+      const result = await signIn('credentials', {
+        redirect: false,
+        email,
+        password,
+      });
+      
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+      
+      // Wait a moment for the session to be fully established
+      setTimeout(() => {
+        // Redirect to the previous page or home using replace instead of push
+        const redirect = router.query.redirect as string || '/';
+        router.replace(redirect);
+      }, 1000);
     } catch (error: any) {
       setError(
         error.response?.data?.message ||
+        error.message ||
         'Registration failed. Please try again.'
       );
-    } finally {
       setLoading(false);
     }
   };

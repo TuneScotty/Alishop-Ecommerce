@@ -53,8 +53,9 @@ mongodb_credentials.txt
 *.tsbuildinfo
 *.sh
 
-# DO NOT exclude .env files as they need to be in the repository
-# .env
-# .env.local
-# .env.development
-# .env.production
+# Only ignore local development .env
+.env
+
+# gitignore
+.gitignore
+

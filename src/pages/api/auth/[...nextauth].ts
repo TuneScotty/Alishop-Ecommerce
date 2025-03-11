@@ -26,8 +26,7 @@ export const authOptions: NextAuthOptions = {
         try {
           await connectDB();
           
-          // Instead of making an API call, directly use the User model
-          // This avoids any URL path issues
+          // Find the user by email
           const user = await User.findOne({ email: credentials.email });
           
           if (user && (await user.comparePassword(credentials.password))) {
