@@ -38,9 +38,6 @@ yarn-error.log*
 
 # Logs
 logs
-<<<<<<< Updated upstream
-*.log 
-=======
 *.log
 
 # PowerShell scripts
@@ -53,6 +50,11 @@ mongodb_credentials.txt
 .vercel
 
 # TypeScript
-*.tsbuildinfo 
->>>>>>> Stashed changes
+*.tsbuildinfo
 *.sh
+
+# DO NOT exclude .env files as they need to be in the repository
+# .env
+# .env.local
+# .env.development
+# .env.production
