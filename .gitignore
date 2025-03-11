@@ -20,11 +20,6 @@ next-env.d.ts
 # Misc
 .DS_Store
 *.pem
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Debug
 npm-debug.log*
@@ -43,4 +38,20 @@ yarn-error.log*
 
 # Logs
 logs
+<<<<<<< Updated upstream
 *.log 
+=======
+*.log
+
+# PowerShell scripts
+*.ps1
+
+# MongoDB
+mongodb_credentials.txt
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo 
+>>>>>>> Stashed changes
