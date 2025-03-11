@@ -42,6 +42,7 @@ logs
 
 # PowerShell scripts
 *.ps1
+*.md
 
 # MongoDB
 mongodb_credentials.txt

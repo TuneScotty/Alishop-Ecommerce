@@ -1,24 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getServerSession } from 'next-auth';
 import User from '../../../models/User';
 import connectDB from '../../../config/database';
-import { isAdmin } from '../../../utils/auth';
-import { authOptions } from '../auth/[...nextauth]';
+import { withAuth } from '../../../utils/apiAuth';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Get the session using getServerSession
-  const session = await getServerSession(req, res, authOptions);
-  
-  // Only allow authenticated admin users
-  if (!session) {
-    return res.status(401).json({ message: 'Not authenticated' });
-  }
-  
-  // Check if user is admin
-  if (!isAdmin(session)) {
-    return res.status(403).json({ message: 'Not authorized' });
-  }
-  
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   switch (req.method) {
     case 'GET':
       try {
@@ -38,4 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       res.setHeader('Allow', ['GET']);
       res.status(405).end(`Method ${req.method} Not Allowed`);
   }
-} 
+}
+
+// Export with authentication and admin requirement
+export default withAuth(handler, { requireAuth: true, requireAdmin: true }); 

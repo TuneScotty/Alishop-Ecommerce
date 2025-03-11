@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import User from '../../../models/User';
 import connectDB from '../../../config/database';
+import { withAuth } from '../../../utils/apiAuth';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
@@ -63,4 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-} 
+}
+
+// Export without authentication requirement
+export default withAuth(handler, { requireAuth: false }); 

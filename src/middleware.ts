@@ -5,10 +5,17 @@ export function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   
   // Define public paths that don't require authentication
-  const isPublicPath = path === '/login' || path === '/register' || path === '/' || path.startsWith('/api/');
+  const isPublicPath = 
+    path === '/login' || 
+    path === '/register' || 
+    path === '/' || 
+    path.startsWith('/api/auth/') ||
+    path.startsWith('/api/products') ||
+    path === '/api/webhook';
   
   // Get the token from the cookies
-  const token = request.cookies.get('next-auth.session-token')?.value || '';
+  const token = request.cookies.get('next-auth.session-token')?.value || 
+                request.cookies.get('__Secure-next-auth.session-token')?.value || '';
   
   // Redirect logic
   if (!isPublicPath && !token) {
@@ -27,6 +34,6 @@ export function middleware(request: NextRequest) {
 // Configure which paths the middleware should run on
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/auth).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }; 

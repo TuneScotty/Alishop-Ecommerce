@@ -30,6 +30,7 @@ export const authOptions: NextAuthOptions = {
           const user = await User.findOne({ email: credentials.email });
           
           if (user && (await user.comparePassword(credentials.password))) {
+            console.log(`User authenticated: ${credentials.email}`);
             return {
               id: user._id.toString(),
               name: user.name,
@@ -38,10 +39,11 @@ export const authOptions: NextAuthOptions = {
               token: generateToken(user._id.toString()),
             };
           } else {
+            console.log(`Authentication failed for: ${credentials.email}`);
             return null;
           }
         } catch (error) {
-          console.error('NextAuth error:', error);
+          console.error('NextAuth authorize error:', error);
           return null;
         }
       },
@@ -73,8 +75,55 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     error: '/login',
   },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Secure-next-auth.session-token' 
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    },
+    callbackUrl: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Secure-next-auth.callback-url'
+        : 'next-auth.callback-url',
+      options: {
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    },
+    csrfToken: {
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Host-next-auth.csrf-token' 
+        : 'next-auth.csrf-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production'
+      }
+    }
+  },
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
   debug: process.env.NODE_ENV === 'development',
+  logger: {
+    error(code, metadata) {
+      console.error(`NextAuth error: ${code}`, metadata);
+    },
+    warn(code) {
+      console.warn(`NextAuth warning: ${code}`);
+    },
+    debug(code, metadata) {
+      if (process.env.DEBUG === 'true') {
+        console.log(`NextAuth debug: ${code}`, metadata);
+      }
+    },
+  },
 };
 
 export default NextAuth(authOptions); 

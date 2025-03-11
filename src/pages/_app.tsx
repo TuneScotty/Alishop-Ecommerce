@@ -8,6 +8,7 @@ import { useRouter } from 'next/router';
 import { NotificationProvider } from '../context/NotificationContext';
 import connectDB from '../config/database';
 import Head from 'next/head';
+import { validateEnv } from '../utils/validateEnv';
 
 // Add global type for mongoose
 declare global {
@@ -17,12 +18,22 @@ declare global {
   };
 }
 
-// Load environment variables
+// Load environment variables and validate them
 if (typeof window === 'undefined') {
   // This only runs on the server side
   try {
     const dotenv = require('dotenv');
-    dotenv.config({ path: '.env.local' });
+    
+    // Load the appropriate .env file based on environment
+    if (process.env.NODE_ENV === 'production') {
+      dotenv.config({ path: '.env.production' });
+    } else {
+      dotenv.config({ path: '.env.local' });
+      dotenv.config({ path: '.env' });
+    }
+    
+    // Validate environment variables
+    validateEnv();
     
     // Ensure database connection on server side only
     connectDB().catch(err => console.error('Failed to connect to MongoDB:', err));
