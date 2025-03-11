@@ -55,3 +55,4 @@ mongodb_credentials.txt
 # TypeScript
 *.tsbuildinfo 
 >>>>>>> Stashed changes
+*.sh
