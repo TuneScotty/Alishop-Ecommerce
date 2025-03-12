@@ -29,7 +29,7 @@ export function middleware(req: NextRequest) {
     }
   }
   
-  // Get the token from the cookies
+  // Get the token from the cookies 
   const token = req.cookies.get('auth-token')?.value;
   
   // Check if this is an API route that should be protected
