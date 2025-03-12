@@ -2,6 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: 'standalone',
+  poweredByHeader: false,
   images: {
     domains: [
       'via.placeholder.com',
@@ -21,7 +23,8 @@ const nextConfig = {
       'placehold.co',
       'placekitten.com',
       'loremflickr.com',
-      'dummyimage.com'
+      'dummyimage.com',
+      'srv751233.hstgr.cloud'
     ],
     remotePatterns: [
       {
@@ -29,14 +32,28 @@ const nextConfig = {
         hostname: '**',
       },
     ],
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
   },
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     MONGODB_URI: process.env.MONGODB_URI,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://srv751233.hstgr.cloud:3000',
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     JWT_SECRET: process.env.JWT_SECRET,
+  },
+  // Ensure static files are properly served
+  async headers() {
+    return [
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
 };
 

@@ -6,10 +6,12 @@ export function middleware(req: NextRequest) {
   
   // Handle CORS for API routes
   if (req.nextUrl.pathname.startsWith('/api')) {
-    const origin = process.env.NEXTAUTH_URL || 
+    // Use the actual hostname from the request instead of hardcoded values
+    const origin = req.headers.get('host') ? `http://${req.headers.get('host')}` : 
+                  (process.env.NEXTAUTH_URL || 
                   (process.env.NODE_ENV === 'production' 
-                    ? 'http://145.223.99.251' 
-                    : 'http://localhost:3000');
+                    ? 'http://srv751233.hstgr.cloud:3000' 
+                    : 'http://localhost:3000'));
     
     res.headers.set('Access-Control-Allow-Credentials', 'true');
     res.headers.set('Access-Control-Allow-Origin', origin);
@@ -54,7 +56,7 @@ export function middleware(req: NextRequest) {
   // For non-API routes that should be protected
   if (req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/profile')) {
     if (!token) {
-      return NextResponse.redirect(new URL('/login-test', req.url));
+      return NextResponse.redirect(new URL('/login', req.url));
     }
     
     try {
@@ -63,7 +65,7 @@ export function middleware(req: NextRequest) {
       return res;
     } catch (error) {
       // Redirect to login if token is invalid
-      return NextResponse.redirect(new URL('/login-test', req.url));
+      return NextResponse.redirect(new URL('/login', req.url));
     }
   }
   
