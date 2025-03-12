@@ -82,7 +82,6 @@ function ensureCartConsistency() {
 
 export default function App({ Component, pageProps: { session: pageSession, ...pageProps } }: AppProps) {
   const router = useRouter();
-  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
   // Ensure cart consistency on initial load
@@ -106,12 +105,8 @@ export default function App({ Component, pageProps: { session: pageSession, ...p
     };
   }, [router]);
 
-  useEffect(() => {
-    console.log('Current session:', session);
-  }, [session]);
-
   return (
-    <SessionProvider session={session}>
+    <SessionProvider session={pageSession}>
       <NotificationProvider>
         <ThemeProvider>
           <CartProvider>
