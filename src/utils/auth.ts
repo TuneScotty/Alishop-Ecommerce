@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import connectDB from '../config/database';
 import { Session } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 
 export interface AuthenticatedRequest extends NextApiRequest {
   user?: any;
@@ -60,12 +61,27 @@ export const admin = (
  * @returns boolean indicating if the user is an admin
  */
 export const isAdmin = (session: Session | null): boolean => {
-  if (!session || !session.user) {
-    return false;
-  }
-  
-  const user = session.user as any;
-  
-  // Check for both role === 'admin' and isAdmin === true
-  return user.role === 'admin' || user.isAdmin === true;
-}; 
+  return !!session?.user?.isAdmin;
+};
+
+// Check if user is authenticated
+export const isAuthenticated = (session: Session | null): boolean => {
+  return !!session?.user;
+};
+
+// Extend the JWT with custom fields
+export interface ExtendedJWT extends JWT {
+  userId?: string;
+  isAdmin?: boolean;
+}
+
+// Extend the Session with custom fields
+export interface ExtendedSession extends Session {
+  user?: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    isAdmin?: boolean;
+  };
+} 

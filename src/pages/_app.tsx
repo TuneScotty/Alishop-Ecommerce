@@ -1,6 +1,6 @@
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { CartProvider } from '../context/CartContext';
 import { ThemeProvider } from '../context/ThemeContext';
 import { useEffect, useState } from 'react';
@@ -80,8 +80,9 @@ function ensureCartConsistency() {
   }
 }
 
-export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+export default function App({ Component, pageProps: { session: pageSession, ...pageProps } }: AppProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
 
   // Ensure cart consistency on initial load
@@ -104,6 +105,10 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       router.events.off('routeChangeError', handleComplete);
     };
   }, [router]);
+
+  useEffect(() => {
+    console.log('Current session:', session);
+  }, [session]);
 
   return (
     <SessionProvider session={session}>

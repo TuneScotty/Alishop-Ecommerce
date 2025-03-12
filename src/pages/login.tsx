@@ -27,19 +27,42 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // First try with NextAuth
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
       });
       
-      if (result?.error) {
-        setError('Invalid email or password');
-        setLoading(false);
+      if (result?.ok) {
+        // Successful login with NextAuth
+        const redirect = router.query.redirect as string || '/';
+        router.push(redirect);
         return;
       }
       
-      // Successful login is handled by the useEffect above
+      // If NextAuth fails, try our custom endpoint
+      console.log('NextAuth login failed, trying custom endpoint');
+      const response = await fetch('/api/auth/test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data.success) {
+        // Custom login successful, refresh the page to update session
+        console.log('Custom login successful, refreshing page');
+        window.location.href = (router.query.redirect as string) || '/';
+        return;
+      }
+      
+      // Both methods failed
+      setError(data.message || 'Invalid email or password');
+      setLoading(false);
     } catch (error: any) {
       console.error('Login error:', error);
       setError('An unexpected error occurred. Please try again.');

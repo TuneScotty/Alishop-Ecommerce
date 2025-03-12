@@ -1,39 +1,75 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { verify } from 'jsonwebtoken';
 
-export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
+export function middleware(req: NextRequest) {
+  const res = NextResponse.next();
   
-  // Define public paths that don't require authentication
-  const isPublicPath = 
-    path === '/login' || 
-    path === '/register' || 
-    path === '/' || 
-    path.startsWith('/api/auth/') ||
-    path.startsWith('/api/products') ||
-    path === '/api/webhook';
+  // Handle CORS for API routes
+  if (req.nextUrl.pathname.startsWith('/api')) {
+    const origin = process.env.NEXTAUTH_URL || 
+                  (process.env.NODE_ENV === 'production' 
+                    ? 'http://145.223.99.251' 
+                    : 'http://localhost:3000');
+    
+    res.headers.set('Access-Control-Allow-Credentials', 'true');
+    res.headers.set('Access-Control-Allow-Origin', origin);
+    res.headers.set(
+      'Access-Control-Allow-Methods',
+      'GET,OPTIONS,PATCH,DELETE,POST,PUT'
+    );
+    res.headers.set(
+      'Access-Control-Allow-Headers',
+      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+    );
+
+    if (req.method === 'OPTIONS') {
+      return new NextResponse(null, { status: 200 });
+    }
+  }
   
   // Get the token from the cookies
-  const token = request.cookies.get('next-auth.session-token')?.value || 
-                request.cookies.get('__Secure-next-auth.session-token')?.value || '';
+  const token = req.cookies.get('auth-token')?.value;
   
-  // Redirect logic
-  if (!isPublicPath && !token) {
-    // Redirect to login if trying to access a protected route without a token
-    return NextResponse.redirect(new URL(`/login?redirect=${path}`, request.url));
+  // Check if this is an API route that should be protected
+  if (req.nextUrl.pathname.startsWith('/api/protected')) {
+    if (!token) {
+      return NextResponse.json(
+        { success: false, message: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
+    try {
+      // Verify the token
+      verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+      return res;
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid token' },
+        { status: 401 }
+      );
+    }
   }
   
-  if ((path === '/login' || path === '/register') && token) {
-    // Redirect to home if trying to access login/register with a token
-    return NextResponse.redirect(new URL('/', request.url));
+  // For non-API routes that should be protected
+  if (req.nextUrl.pathname.startsWith('/admin') || req.nextUrl.pathname.startsWith('/profile')) {
+    if (!token) {
+      return NextResponse.redirect(new URL('/login-test', req.url));
+    }
+    
+    try {
+      // Verify the token
+      verify(token, process.env.JWT_SECRET || 'fallback-secret-key');
+      return res;
+    } catch (error) {
+      // Redirect to login if token is invalid
+      return NextResponse.redirect(new URL('/login-test', req.url));
+    }
   }
   
-  return NextResponse.next();
+  return res;
 }
 
-// Configure which paths the middleware should run on
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/api/:path*', '/admin/:path*', '/profile/:path*'],
 }; 

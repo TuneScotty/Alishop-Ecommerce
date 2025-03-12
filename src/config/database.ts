@@ -45,34 +45,21 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 10000,
     };
 
-    if (!MONGODB_URI) {
-      throw new Error(
-        'MongoDB connection failed: No MongoDB URI defined. Please check your environment variables.'
-      );
-    }
-
-    // Log which environment we're connecting to
-    const isProduction = process.env.NODE_ENV === 'production';
-    console.log(`Connecting to MongoDB (${isProduction ? 'production' : 'development'})...`);
-    
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      console.log('MongoDB connected successfully');
-      return mongoose;
-    });
+    console.log('Connecting to MongoDB...');
+    cached.promise = mongoose.connect(MONGODB_URI, opts)
+      .then((mongoose) => {
+        console.log('MongoDB connected successfully');
+        return mongoose;
+      })
+      .catch((error) => {
+        console.error('MongoDB connection error:', error);
+        throw error;
+      });
   }
 
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    console.error('MongoDB connection error:', e);
-    throw e;
-  }
-
+  cached.conn = await cached.promise;
   return cached.conn;
 }
 

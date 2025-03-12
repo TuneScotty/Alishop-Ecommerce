@@ -3,6 +3,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import User from '../../../models/User';
 import connectDB from '../../../config/database';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 
 // Generate JWT token
 const generateToken = (id: string) => {
@@ -17,56 +18,76 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials) return null;
-        
-        try {
-          await connectDB();
-          
-          // Find the user by email
-          const user = await User.findOne({ email: credentials.email });
-          
-          if (user && (await user.comparePassword(credentials.password))) {
-            console.log(`User authenticated: ${credentials.email}`);
-            return {
-              id: user._id.toString(),
-              name: user.name,
-              email: user.email,
-              isAdmin: user.isAdmin,
-              token: generateToken(user._id.toString()),
-            };
-          } else {
-            console.log(`Authentication failed for: ${credentials.email}`);
-            return null;
-          }
-        } catch (error) {
-          console.error('NextAuth authorize error:', error);
+        if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials');
           return null;
         }
-      },
-    }),
+        
+        try {
+          // Connect to the database
+          await connectDB();
+          
+          // Find the user
+          const user = await User.findOne({ email: credentials.email });
+          
+          // Log the authentication attempt
+          console.log(`Auth attempt for ${credentials.email}: User found: ${!!user}`);
+          
+          if (!user) {
+            console.log('User not found');
+            return null;
+          }
+          
+          // Check password
+          const isMatch = await bcrypt.compare(credentials.password, user.password);
+          console.log(`Password match: ${isMatch}`);
+          
+          if (!isMatch) {
+            console.log('Password does not match');
+            return null;
+          }
+          
+          // Return the user object
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin || false
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
+      }
+    })
   ],
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
+        token.userId = user.id;
         token.isAdmin = user.isAdmin;
-        token.accessToken = user.token;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.user.isAdmin = token.isAdmin as boolean;
-        session.accessToken = token.accessToken as string;
+        session.user.id = token.userId;
+        session.user.isAdmin = token.isAdmin;
       }
       return session;
     },
@@ -77,15 +98,13 @@ export const authOptions: NextAuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' 
-        ? '__Secure-next-auth.session-token' 
-        : 'next-auth.session-token',
+      name: `next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production'
-      }
+        secure: process.env.NODE_ENV === 'production',
+      },
     },
     callbackUrl: {
       name: process.env.NODE_ENV === 'production'
@@ -110,7 +129,7 @@ export const authOptions: NextAuthOptions = {
     }
   },
   secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
   logger: {
     error(code, metadata) {
       console.error(`NextAuth error: ${code}`, metadata);
