@@ -81,6 +81,11 @@ export default function LoginPage() {
     );
   }
 
+  // Add this check before any router.push('/login') calls
+  if (router.pathname !== '/login') {
+    router.push('/login');
+  }
+
   return (
     <Layout title="AliShop - Login" description="Login to your account">
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
