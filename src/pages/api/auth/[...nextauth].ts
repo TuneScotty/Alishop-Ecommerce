@@ -56,7 +56,8 @@ export const authOptions: NextAuthOptions = {
             id: user._id.toString(),
             name: user.name,
             email: user.email,
-            isAdmin: user.isAdmin || false
+            isAdmin: user.isAdmin || false,
+            token: generateToken(user._id.toString())
           };
         } catch (error) {
           console.error('Auth error:', error);
