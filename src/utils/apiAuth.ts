@@ -20,7 +20,7 @@ export function withAuth(handler: ApiHandler, options: AuthOptions = {}) {
       // Apply CORS middleware if enabled
       if (applyCors) {
         await new Promise<void>((resolve) => {
-          corsMiddleware(req, res, () => resolve());
+          corsMiddleware((req, res) => { resolve(); })(req, res);
         });
       }
       
