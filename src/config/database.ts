@@ -1,25 +1,26 @@
 import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+// Load different env files based on environment
+if (process.env.NODE_ENV === 'production') {
+  dotenv.config({ path: '.env.production' });
+} else {
+  dotenv.config({ path: '.env' });
+}
 
 interface ConnectionCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI;
+// Log environment state for debugging
+console.log(`NODE_ENV is: ${process.env.NODE_ENV}`);
+console.log(`MONGODB_URI exists: ${!!process.env.MONGODB_URI}`);
 
-// Check if MONGODB_URI is defined, but don't throw an error immediately
-// This allows the application to start even if the environment variable is missing
+const MONGODB_URI = process.env.MONGODB_URI as string;
+
 if (!MONGODB_URI) {
-  console.error('Warning: MONGODB_URI environment variable is not defined. Please add it to your .env file.');
-  // Try to load from .env directly if running on server
-  if (typeof window === 'undefined') {
-    try {
-      const dotenv = require('dotenv');
-      dotenv.config({ path: '.env' });
-    } catch (error) {
-      console.error('Error loading .env file:', error);
-    }
-  }
+  throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
 /**
