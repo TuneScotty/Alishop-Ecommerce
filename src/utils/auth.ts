@@ -71,17 +71,17 @@ export const isAuthenticated = (session: Session | null): boolean => {
 
 // Extend the JWT with custom fields
 export interface ExtendedJWT extends JWT {
-  userId?: string;
-  isAdmin?: boolean;
+  userId: string;
+  isAdmin: boolean;
 }
 
 // Extend the Session with custom fields
 export interface ExtendedSession extends Session {
-  user?: {
-    id?: string;
+  user: {
+    id: string;
+    isAdmin: boolean;
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    isAdmin?: boolean;
   };
 } 
