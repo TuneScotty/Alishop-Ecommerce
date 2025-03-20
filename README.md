@@ -1,54 +1,58 @@
-# E-Commerce Website
+# E-commerce Website
 
-A modern e-commerce platform built with Next.js, React, and MongoDB.
+A modern, high-performance e-commerce platform built with Next.js and TypeScript.
 
-## Features
+## Technologies
 
-- User authentication and authorization
+### Frontend
+- Next.js 14 with App Router
+- TypeScript
+- TailwindCSS
+- NextAuth.js for authentication
+- React Query for data fetching
+- Framer Motion for animations
+
+### Backend
+- MongoDB for database
+- JWT for API authentication
+- Next.js API routes
+- Docker for containerization
+
+### Infrastructure
+- VPS hosting
+- Nginx reverse proxy
+- GitHub webhooks for automated deployment
+
+## Architecture
+
+### Core Features
+- Server-side rendering for optimal performance
+- Role-based authentication (admin/user)
+- Shopping cart with persistent storage
+- Order management system
 - Product catalog with search and filtering
-- Shopping cart functionality
-- Checkout process
-- Order management
-- Admin dashboard for product management
-- Responsive design for mobile and desktop
+- Admin dashboard for inventory management
 
-## Tech Stack
+### Code Organization
+```src/```
+- ```app/``` - Next.js app router pages and layouts
+- ```components/``` - Reusable React components
+- ```lib/``` - Core utilities and configurations
+- ```models/``` - MongoDB schemas and types
+- ```utils/``` - Helper functions and hooks
 
-- **Frontend**: Next.js, React, Tailwind CSS
-- **Backend**: Next.js API routes
-- **Database**: MongoDB
-- **Authentication**: NextAuth.js
-- **State Management**: React Context API
-- **Styling**: Tailwind CSS
+### Security
+- JWT token authentication
+- Protected API routes
+- Secure session management
+- Input validation and sanitization
 
-## Getting Started
+### Performance
+- Image optimization
+- Code splitting
+- Caching strategies
+- Lazy loading
+- Optimized database queries
 
-### Prerequisites
-
-- Node.js (v14 or later)
-- npm or yarn
-- MongoDB connection
-
-### Installation
-
-1. Clone the repository
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Set up environment variables:
-   Create a `.env.local` file with the following variables:
-   ```
-   MONGODB_URI=your_mongodb_connection_string
-   NEXTAUTH_URL=http://localhost:3000
-   NEXTAUTH_SECRET=your_nextauth_secret
-   ```
-4. Run the development server:
-   ```
-   npm run dev
-   ```
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## Deployment
-
-This application can be deployed on Vercel, Netlify, or any other platform that supports Next.js applications. 
+## Status
+Active development - Personal use only
