@@ -395,7 +395,7 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    const featuredRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+    const featuredRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products`, {
       params: {
         featured: true,
         limit: 8
