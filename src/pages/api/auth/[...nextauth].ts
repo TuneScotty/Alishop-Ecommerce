@@ -28,35 +28,29 @@ export const authOptions: NextAuthOptions = {
         }
         
         try {
-          // Connect to the database
           await connectDB();
-          
-          // Find the user
           const user = await User.findOne({ email: credentials.email });
           
-          // Log the authentication attempt
           console.log(`Auth attempt for ${credentials.email}: User found: ${!!user}`);
           
           if (!user) {
             console.log('User not found');
             return null;
           }
-          
-          // Check password
+
           const isMatch = await bcrypt.compare(credentials.password, user.password);
-          console.log(`Password match: ${isMatch}`);
           
           if (!isMatch) {
-            console.log('Password does not match');
+            console.log('Password mismatch');
             return null;
           }
-          
-          // Return the user object
+
           return {
             id: user._id.toString(),
             name: user.name,
             email: user.email,
-            isAdmin: user.isAdmin || false,
+            image: null,
+            isAdmin: user.isAdmin,
             token: generateToken(user._id.toString())
           };
         } catch (error) {
@@ -82,15 +76,13 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
-        token.accessToken = user.token;
       }
       return token;
     },
     async session({ session, token }) {
-      if (token && session.user) {
-        session.user.id = token.id;
-        session.user.isAdmin = token.isAdmin;
-        session.accessToken = token.accessToken;
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
     },
