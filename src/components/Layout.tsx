@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useSession, signOut } from 'next-auth/react';
-import { isAdmin } from '../utils/auth';
+import { isAdmin } from '../utils/clientAuth';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -49,15 +49,18 @@ export default function Layout({ children, title = 'AliShop', description = 'Pre
   // Handle scroll for header transparency
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
+      const scrollPosition = typeof window !== 'undefined' ? window.pageYOffset || document.documentElement.scrollTop : 0;
+      if (scrollPosition > 10) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
     };
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, []);
   
   // Navigation items

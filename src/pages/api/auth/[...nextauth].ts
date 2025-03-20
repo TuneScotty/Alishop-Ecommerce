@@ -80,15 +80,17 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
-        token.userId = user.id;
+        token.id = user.id;
         token.isAdmin = user.isAdmin;
+        token.accessToken = user.token;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.userId as string;
-        session.user.isAdmin = token.isAdmin as boolean;
+        session.user.id = token.id;
+        session.user.isAdmin = token.isAdmin;
+        session.accessToken = token.accessToken;
       }
       return session;
     },

@@ -19,9 +19,14 @@ export function withAuth(handler: ApiHandler, options: AuthOptions = {}) {
     try {
       // Apply CORS middleware if enabled
       if (applyCors) {
-        await new Promise<void>((resolve) => {
-          corsMiddleware((req, res) => { resolve(); })(req, res);
+        const corsPromise = new Promise<void>((resolve) => {
+          const wrappedHandler = corsMiddleware(() => {
+            resolve();
+            return Promise.resolve();
+          });
+          wrappedHandler(req, res);
         });
+        await corsPromise;
       }
       
       // Skip authentication if not required

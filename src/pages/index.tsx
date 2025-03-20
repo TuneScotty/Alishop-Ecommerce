@@ -30,13 +30,15 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
   useEffect(() => {
     const handleScroll = () => {
       if (heroRef.current) {
-        const scrollY = window.scrollY;
-        heroRef.current.style.transform = `translateY(${scrollY * 0.5}px)`;
+        const scrollPosition = typeof window !== 'undefined' ? window.pageYOffset || document.documentElement.scrollTop : 0;
+        heroRef.current.style.transform = `translateY(${scrollPosition * 0.5}px)`;
       }
     };
     
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
   }, []);
   
   // Staggered animation on load
@@ -393,34 +395,19 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    // Fetch featured products
-    const featuredRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products?featured=true&limit=8`);
-    
-    // Fetch new arrivals
-    const newArrivalsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products?sort=newest&limit=4`);
-    
-    // Fetch trending products
-    const trendingRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products?sort=rating&limit=6`);
-    
-    // Ensure we have arrays for all product types
-    const featuredProducts = Array.isArray(featuredRes.data) 
-      ? featuredRes.data 
-      : featuredRes.data.products || [];
-      
-    const newArrivals = Array.isArray(newArrivalsRes.data) 
-      ? newArrivalsRes.data 
-      : newArrivalsRes.data.products || [];
-      
-    const trendingProducts = Array.isArray(trendingRes.data) 
-      ? trendingRes.data 
-      : trendingRes.data.products || [];
-    
+    const featuredRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+      params: {
+        featured: true,
+        limit: 8
+      }
+    });
+
     return {
       props: {
-        featuredProducts,
-        newArrivals,
-        trendingProducts,
-      },
+        featuredProducts: featuredRes.data || [],
+        newArrivals: [],
+        trendingProducts: []
+      }
     };
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -428,8 +415,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
       props: {
         featuredProducts: [],
         newArrivals: [],
-        trendingProducts: [],
-      },
+        trendingProducts: []
+      }
     };
   }
 }; 
