@@ -31,36 +31,32 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
+    // Force non-SSL connection with simplified options
     const opts = {
-      bufferCommands: false,
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      family: 4, // Use IPv4, skip trying IPv6
-      ssl: false, // Explicitly disable SSL
-      tls: false, // Explicitly disable TLS
-      tlsAllowInvalidCertificates: false
+      ssl: false,
+      tls: false,
+      directConnection: true, // Use direct connection to avoid srv resolution
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000
     };
 
-    console.log('Creating new database connection');
-
-    // Create a clean connection string without SSL parameters
-    let connectionString = MONGODB_URI as string;
-    if (connectionString.includes('ssl=true')) {
-      connectionString = connectionString.replace('ssl=true', 'ssl=false');
-    } else if (!connectionString.includes('ssl=false')) {
-      connectionString += connectionString.includes('?') ? '&ssl=false' : '?ssl=false';
+    // Strip any existing options and rebuild connection string
+    let uri = MONGODB_URI as string;
+    // Remove any query parameters
+    if (uri.includes('?')) {
+      uri = uri.substring(0, uri.indexOf('?'));
     }
+    // Add our safe parameters
+    uri += '?ssl=false&directConnection=true';
 
-    console.log('Connecting to MongoDB...');
-    cached.promise = mongoose.connect(connectionString, opts)
+    console.log('Connecting to MongoDB with URI structure:', uri.replace(/:[^:]*@/, ':***@'));
+    cached.promise = mongoose.connect(uri, opts)
       .then((mongoose) => {
         console.log('MongoDB connected successfully');
         return mongoose;
       })
       .catch((error) => {
         console.error('MongoDB connection error:', error);
-        console.log('Failed to connect to MongoDB:', error);
         cached.promise = null;
         throw error;
       });
