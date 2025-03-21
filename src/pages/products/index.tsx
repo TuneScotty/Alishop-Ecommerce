@@ -6,6 +6,8 @@ import Layout from '../../components/Layout';
 import ProductCard from '../../components/ProductCard';
 import { IProduct } from '../../models/Product';
 import { useNotification } from '../../context/NotificationContext';
+import connectDB from '../../lib/dbConnect';
+import Product from '../../models/Product';
 
 interface ProductsPageProps {
   products: IProduct[];
@@ -145,18 +147,34 @@ export default function ProductsPage({ products, pages, page }: ProductsPageProp
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   try {
-    const page = query.page || 1;
-    const keyword = query.keyword || '';
+    const page = Number(query.page) || 1;
+    const keyword = query.keyword ? String(query.keyword) : '';
     
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/products?page=${page}&keyword=${keyword}`
-    );
+    // Connect directly to the database instead of making an API call
+    await connectDB();
+    
+    const pageSize = 10;
+    
+    const keywordFilter = keyword
+      ? {
+          name: {
+            $regex: keyword,
+            $options: 'i',
+          },
+        }
+      : {};
+    
+    const count = await Product.countDocuments({ ...keywordFilter });
+    const products = await Product.find({ ...keywordFilter })
+      .limit(pageSize)
+      .skip(pageSize * (page - 1))
+      .lean();
     
     return {
       props: {
-        products: res.data.products,
-        page: res.data.page,
-        pages: res.data.pages,
+        products: JSON.parse(JSON.stringify(products)),
+        page,
+        pages: Math.ceil(count / pageSize),
       },
     };
   } catch (error) {

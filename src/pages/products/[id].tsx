@@ -8,6 +8,8 @@ import Layout from '../../components/Layout';
 import { IProduct } from '../../models/Product';
 import { useNotification } from '../../context/NotificationContext';
 import ExternalImage from '../../components/ExternalImage';
+import connectDB from '../../lib/dbConnect';
+import Product from '../../models/Product';
 
 interface ProductDetailProps {
   product: IProduct | null;
@@ -377,32 +379,34 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       };
     }
 
-    // Try to fetch by ID first
-    try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/${params.id}`);
+    await connectDB();
+    
+    let product = null;
+    const paramId = Array.isArray(params.id) ? params.id[0] : params.id;
+    
+    // Try to fetch by ID if it's a valid MongoDB ID
+    if (paramId.match(/^[0-9a-fA-F]{24}$/)) {
+      product = await Product.findById(paramId).lean();
+    }
+    
+    // If not found by ID, try by slug
+    if (!product) {
+      product = await Product.findOne({ slug: paramId }).lean();
+    }
+    
+    if (!product) {
       return {
         props: {
-          product: res.data,
+          product: null,
         },
       };
-    } catch (idError) {
-      // If ID fetch fails, try by slug
-      try {
-        const slugRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/slug/${params.id}`);
-        return {
-          props: {
-            product: slugRes.data,
-          },
-        };
-      } catch (slugError) {
-        console.error('Error fetching product by slug:', slugError);
-        return {
-          props: {
-            product: null,
-          },
-        };
-      }
     }
+
+    return {
+      props: {
+        product: JSON.parse(JSON.stringify(product)),
+      },
+    };
   } catch (error) {
     console.error('Error fetching product:', error);
     return {

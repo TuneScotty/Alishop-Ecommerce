@@ -8,6 +8,8 @@ import { IProduct } from '../models/Product';
 import { useNotification } from '../context/NotificationContext';
 import theme from '../styles/theme';
 import ProductCard from '../components/ProductCard';
+import connectDB from '../lib/dbConnect';
+import Product from '../models/Product';
 
 interface HomeProps {
   featuredProducts: IProduct[];
@@ -395,18 +397,31 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    const featuredRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/api/products`, {
-      params: {
-        featured: true,
-        limit: 8
-      }
-    });
+    await connectDB();
+    
+    // Get featured products directly from the database
+    const featuredProducts = await Product.find({ featured: true })
+      .limit(8)
+      .lean();
+    
+    // Get new arrivals (most recent products)
+    const newArrivals = await Product.find({})
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+    
+    // Get trending products (you could modify this logic based on your needs)
+    // For now, we'll just get products with highest ratings
+    const trendingProducts = await Product.find({})
+      .sort({ rating: -1 })
+      .limit(8)
+      .lean();
 
     return {
       props: {
-        featuredProducts: featuredRes.data || [],
-        newArrivals: [],
-        trendingProducts: []
+        featuredProducts: JSON.parse(JSON.stringify(featuredProducts || [])),
+        newArrivals: JSON.parse(JSON.stringify(newArrivals || [])),
+        trendingProducts: JSON.parse(JSON.stringify(trendingProducts || []))
       }
     };
   } catch (error) {

@@ -64,3 +64,4 @@ mongodb_credentials.txt
 *.bat
 *.bat
 .env.production
+*.local
