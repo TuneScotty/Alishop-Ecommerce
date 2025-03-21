@@ -4,7 +4,7 @@ const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error(
-    'Please define the MONGODB_URI environment variable inside .env.local'
+    'Please define the MONGODB_URI environment variable inside .env'
   );
 }
 
@@ -33,20 +33,34 @@ async function dbConnect() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      family: 4,
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      family: 4, // Use IPv4, skip trying IPv6
+      ssl: false, // Explicitly disable SSL
+      tls: false, // Explicitly disable TLS
+      tlsAllowInvalidCertificates: false
     };
 
     console.log('Creating new database connection');
-    cached.promise = mongoose.connect(MONGODB_URI as string, opts)
+
+    // Create a clean connection string without SSL parameters
+    let connectionString = MONGODB_URI as string;
+    if (connectionString.includes('ssl=true')) {
+      connectionString = connectionString.replace('ssl=true', 'ssl=false');
+    } else if (!connectionString.includes('ssl=false')) {
+      connectionString += connectionString.includes('?') ? '&ssl=false' : '?ssl=false';
+    }
+
+    console.log('Connecting to MongoDB...');
+    cached.promise = mongoose.connect(connectionString, opts)
       .then((mongoose) => {
         console.log('MongoDB connected successfully');
         return mongoose;
       })
       .catch((error) => {
         console.error('MongoDB connection error:', error);
+        console.log('Failed to connect to MongoDB:', error);
         cached.promise = null;
         throw error;
       });
@@ -67,4 +81,4 @@ async function dbConnect() {
   return cached.conn;
 }
 
-export default dbConnect; 
+export default dbConnect;
