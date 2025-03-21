@@ -37,7 +37,6 @@ async function dbConnect() {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       family: 4,
-      ssl: false
     };
 
     console.log('Creating new database connection');
