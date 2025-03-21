@@ -23,19 +23,8 @@ if (typeof window === 'undefined') {
   // This only runs on the server side
   try {
     const dotenv = require('dotenv');
-    
-    // Load the appropriate .env file based on environment
-    if (process.env.NODE_ENV === 'production') {
-      dotenv.config({ path: '.env.production' });
-    } else {
-      dotenv.config({ path: '.env.local' });
-      dotenv.config({ path: '.env' });
-    }
-    
-    // Validate environment variables
+    dotenv.config();
     validateEnv();
-    
-    // Ensure database connection on server side only
     connectDB().catch(err => console.error('Failed to connect to MongoDB:', err));
   } catch (error) {
     console.error('Error loading environment variables:', error);
