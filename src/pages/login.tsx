@@ -27,12 +27,15 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      console.log('Attempting login for:', email);
       // First try with NextAuth
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
       });
+      
+      console.log('NextAuth result:', result);
       
       if (result?.ok) {
         // Successful login with NextAuth
@@ -41,9 +44,15 @@ export default function LoginPage() {
         return;
       }
       
+      if (result?.error) {
+        setError(result.error || 'Invalid email or password');
+        setLoading(false);
+        return;
+      }
+      
       // If NextAuth fails, try our custom endpoint
       console.log('NextAuth login failed, trying custom endpoint');
-      const response = await fetch('/api/auth/test', {
+      const response = await fetch('/api/auth/direct-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

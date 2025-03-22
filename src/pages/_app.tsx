@@ -6,7 +6,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { NotificationProvider } from '../context/NotificationContext';
-import connectDB from '../config/database';
+import dbConnect from '../lib/dbConnect';
 import Head from 'next/head';
 import { validateEnv } from '../utils/validateEnv';
 
@@ -25,7 +25,7 @@ if (typeof window === 'undefined') {
     const dotenv = require('dotenv');
     dotenv.config();
     validateEnv();
-    connectDB().catch(err => console.error('Failed to connect to MongoDB:', err));
+    dbConnect().catch(err => console.error('Failed to connect to MongoDB:', err));
   } catch (error) {
     console.error('Error loading environment variables:', error);
   }

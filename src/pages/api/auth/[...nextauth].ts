@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import User from '../../../models/User';
-import connectDB from '../../../config/database';
+import dbConnect from '../../../lib/dbConnect';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -27,24 +27,26 @@ export const authOptions: NextAuthOptions = {
           console.log('Missing credentials');
           return null;
         }
-        
+
         try {
-          await connectDB();
+          await dbConnect();
           const user = await User.findOne({ email: credentials.email });
-          
+
           console.log(`Auth attempt for ${credentials.email}: User found: ${!!user}`);
-          
+
           if (!user) {
             console.log('User not found');
             return null;
           }
 
           const isMatch = await bcrypt.compare(credentials.password, user.password);
-          
+
           if (!isMatch) {
             console.log('Password mismatch');
             return null;
           }
+
+          console.log('Login successful for user:', user.email);
 
           return {
             id: user._id.toString(),
@@ -113,8 +115,8 @@ export const authOptions: NextAuthOptions = {
       }
     },
     csrfToken: {
-      name: process.env.NODE_ENV === 'production' 
-        ? '__Host-next-auth.csrf-token' 
+      name: process.env.NODE_ENV === 'production'
+        ? '__Host-next-auth.csrf-token'
         : 'next-auth.csrf-token',
       options: {
         httpOnly: true,
@@ -124,7 +126,7 @@ export const authOptions: NextAuthOptions = {
       }
     }
   },
-  secret: process.env.NEXTAUTH_SECRET || 'your-secret-key-here',
+  secret: process.env.NEXTAUTH_SECRET,
   debug: true,
   logger: {
     error(code, metadata) {

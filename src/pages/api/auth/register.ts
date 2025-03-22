@@ -1,6 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
+import dbConnect from '../../../lib/dbConnect';
 import User from '../../../models/User';
-import connectDB from '../../../config/database';
+import bcrypt from 'bcryptjs';
 import { withAuth } from '../../../utils/apiAuth';
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,22 +11,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    // Connect to the database
-    await connectDB();
-    
+    await dbConnect();
+
     const { name, email, password } = req.body;
-    
+
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Please provide all required fields' });
     }
-    
+
     // Check if user already exists
     const userExists = await User.findOne({ email });
-    
+
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
-    
+
     // Create new user
     const user = await User.create({
       name,
@@ -33,7 +33,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       password,
       isAdmin: false,
     });
-    
+
     if (user) {
       return res.status(201).json({
         _id: user._id,
@@ -46,20 +46,20 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     }
   } catch (error: any) {
     console.error('Error registering user:', error);
-    
+
     // Provide more specific error messages
     if (error.name === 'MongoServerError' && error.code === 11000) {
       return res.status(400).json({ message: 'Email already in use' });
     }
-    
+
     if (error.name === 'MongoNetworkError' || error.message.includes('ECONNREFUSED')) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: 'Database connection error. Please try again later.',
         details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
-    
-    return res.status(500).json({ 
+
+    return res.status(500).json({
       message: 'Registration failed. Please try again.',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });

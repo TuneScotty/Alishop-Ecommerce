@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import User, { IUser } from '../models/User';
-import connectDB from '../config/database';
+import dbConnect from '../lib/dbConnect';
 import jwt from 'jsonwebtoken';
 
 // Generate JWT token
@@ -13,23 +13,23 @@ const generateToken = (id: string) => {
 // Register a new user
 export const registerUser = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const { name, email, password } = req.body;
-    
+
     const userExists = await User.findOne({ email });
-    
+
     if (userExists) {
       res.status(400).json({ message: 'User already exists' });
       return;
     }
-    
+
     const user = await User.create({
       name,
       email,
       password,
     });
-    
+
     if (user) {
       res.status(201).json({
         _id: user._id,
@@ -49,12 +49,12 @@ export const registerUser = async (req: NextApiRequest, res: NextApiResponse) =>
 // Authenticate user & get token
 export const authUser = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const { email, password } = req.body;
-    
+
     const user = await User.findOne({ email });
-    
+
     if (user && (await user.comparePassword(password))) {
       res.status(200).json({
         _id: user._id,
@@ -74,12 +74,12 @@ export const authUser = async (req: NextApiRequest, res: NextApiResponse) => {
 // Get user profile
 export const getUserProfile = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const userId = req.body.user; // Assuming user ID is passed in the request
-    
+
     const user = await User.findById(userId);
-    
+
     if (user) {
       res.status(200).json({
         _id: user._id,
@@ -98,22 +98,22 @@ export const getUserProfile = async (req: NextApiRequest, res: NextApiResponse) 
 // Update user profile
 export const updateUserProfile = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const userId = req.body.user; // Assuming user ID is passed in the request
-    
+
     const user = await User.findById(userId);
-    
+
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
-      
+
       if (req.body.password) {
         user.password = req.body.password;
       }
-      
+
       const updatedUser = await user.save();
-      
+
       res.status(200).json({
         _id: updatedUser._id,
         name: updatedUser.name,
@@ -132,8 +132,8 @@ export const updateUserProfile = async (req: NextApiRequest, res: NextApiRespons
 // Get all users (admin only)
 export const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const users = await User.find({});
     res.status(200).json(users);
   } catch (error: any) {
@@ -144,10 +144,10 @@ export const getUsers = async (req: NextApiRequest, res: NextApiResponse) => {
 // Delete user (admin only)
 export const deleteUser = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const user = await User.findById(req.query.id);
-    
+
     if (user) {
       await user.deleteOne();
       res.status(200).json({ message: 'User removed' });
@@ -162,10 +162,10 @@ export const deleteUser = async (req: NextApiRequest, res: NextApiResponse) => {
 // Get user by ID (admin only)
 export const getUserById = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const user = await User.findById(req.query.id).select('-password');
-    
+
     if (user) {
       res.status(200).json(user);
     } else {
@@ -179,17 +179,17 @@ export const getUserById = async (req: NextApiRequest, res: NextApiResponse) => 
 // Update user (admin only)
 export const updateUser = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
-    await connectDB();
-    
+    await dbConnect();
+
     const user = await User.findById(req.query.id);
-    
+
     if (user) {
       user.name = req.body.name || user.name;
       user.email = req.body.email || user.email;
       user.isAdmin = req.body.isAdmin !== undefined ? req.body.isAdmin : user.isAdmin;
-      
+
       const updatedUser = await user.save();
-      
+
       res.status(200).json({
         _id: updatedUser._id,
         name: updatedUser.name,
