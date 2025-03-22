@@ -16,6 +16,7 @@ export default function LoginPage() {
   // Redirect if already logged in
   useEffect(() => {
     if (session) {
+      console.log('Session detected, redirecting user');
       const redirect = router.query.redirect as string || '/';
       router.push(redirect);
     }
@@ -28,23 +29,32 @@ export default function LoginPage() {
 
     try {
       console.log('Attempting login for:', email);
-      // First try with NextAuth
+      
+      // Try with NextAuth credentials provider
       const result = await signIn('credentials', {
         redirect: false,
         email,
         password,
+        callbackUrl: (router.query.redirect as string) || '/',
       });
       
-      console.log('NextAuth result:', result);
+      console.log('NextAuth result:', JSON.stringify(result));
       
       if (result?.ok) {
         // Successful login with NextAuth
-        const redirect = router.query.redirect as string || '/';
-        router.push(redirect);
+        console.log('NextAuth login successful, redirecting to:', router.query.redirect || '/');
+        
+        // Give the session a moment to initialize properly
+        setTimeout(() => {
+          const redirect = router.query.redirect as string || '/';
+          router.push(redirect);
+        }, 500);
+        
         return;
       }
       
       if (result?.error) {
+        console.log('NextAuth login failed with error:', result.error);
         setError(result.error || 'Invalid email or password');
         setLoading(false);
         return;
@@ -61,6 +71,7 @@ export default function LoginPage() {
       });
       
       const data = await response.json();
+      console.log('Custom login response:', data);
       
       if (response.ok && data.success) {
         // Custom login successful, refresh the page to update session
@@ -70,7 +81,7 @@ export default function LoginPage() {
       }
       
       // Both methods failed
-      setError(data.message || 'Invalid email or password');
+      setError(data.message || 'Authentication failed. Please check your credentials.');
       setLoading(false);
     } catch (error: any) {
       console.error('Login error:', error);

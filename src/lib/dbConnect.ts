@@ -25,6 +25,8 @@ if (!cached) {
 }
 
 async function dbConnect() {
+  console.log('Creating new MongoDB connection...');
+
   if (cached.conn) {
     console.log('Using existing database connection');
     return cached.conn;
@@ -37,7 +39,11 @@ async function dbConnect() {
       tls: false,
       directConnection: true, // Use direct connection to avoid srv resolution
       serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000
+      connectTimeoutMS: 10000,
+      // Ensure proper date and _id serialization
+      bufferCommands: false, // Disable command buffering
+      autoIndex: true, // Build indexes
+      maxPoolSize: 10, // Maintain up to 10 socket connections
     };
 
     // Strip any existing options and rebuild connection string
@@ -49,10 +55,25 @@ async function dbConnect() {
     // Add our safe parameters
     uri += '?ssl=false&directConnection=true';
 
+    console.log('MongoDB connection being established with patched settings');
+
     console.log('Connecting to MongoDB with URI structure:', uri.replace(/:[^:]*@/, ':***@'));
     cached.promise = mongoose.connect(uri, opts)
       .then((mongoose) => {
         console.log('MongoDB connected successfully');
+
+        // Set up Mongoose to convert ids to strings
+        mongoose.set('toJSON', {
+          virtuals: true,
+          transform: (_, converted) => {
+            if (converted._id) {
+              converted.id = converted._id.toString();
+              delete converted._id;
+            }
+            return converted;
+          }
+        });
+
         return mongoose;
       })
       .catch((error) => {

@@ -14,20 +14,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { email, password } = req.body;
 
     if (!email || !password) {
+      console.log('Direct login: Missing email or password');
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
     console.log('Direct login attempt for:', email);
 
     // Connect to database
+    console.log('Direct login: Connecting to database');
     await dbConnect();
+    console.log('Direct login: Database connected');
 
     // Find user
-    const user = await User.findOne({ email });
+    console.log('Direct login: Finding user');
+    const user = await User.findOne({ email }).lean();
 
     if (!user) {
       console.log('User not found in direct login:', email);
-      return res.status(401).json({ success: false, message: 'User not found' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
     console.log('User found in direct login, checking password');
@@ -37,16 +41,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!isMatch) {
       console.log('Password mismatch in direct login');
-      return res.status(401).json({ success: false, message: 'Invalid password' });
+      return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
     console.log('Password match in direct login, creating token');
 
+    // Convert MongoDB _id to string
+    const userId = user._id.toString();
+    console.log('User ID for token:', userId);
+
     // Create JWT token
     const token = jwt.sign(
       {
-        id: user._id.toString(),
+        id: userId,
         email: user.email,
+        name: user.name,
         isAdmin: user.isAdmin || false
       },
       process.env.JWT_SECRET || 'fallback-secret-key',
@@ -54,19 +63,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     );
 
     // Set cookie
-    res.setHeader('Set-Cookie', cookie.serialize('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-    }));
+    res.setHeader('Set-Cookie', [
+      cookie.serialize('auth-token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      }),
+      cookie.serialize('logged-in', 'true', {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      })
+    ]);
+
+    console.log('Auth cookies set, returning success response');
 
     return res.status(200).json({
       success: true,
       message: 'Authentication successful',
       user: {
-        id: user._id.toString(),
+        id: userId,
         name: user.name,
         email: user.email,
         isAdmin: user.isAdmin || false

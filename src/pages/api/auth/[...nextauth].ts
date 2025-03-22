@@ -29,8 +29,12 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          console.log('Creating database connection...');
           await dbConnect();
-          const user = await User.findOne({ email: credentials.email });
+          console.log('Database connected successfully');
+
+          console.log(`Looking for user with email: ${credentials.email}`);
+          const user = await User.findOne({ email: credentials.email }).lean();
 
           console.log(`Auth attempt for ${credentials.email}: User found: ${!!user}`);
 
@@ -39,6 +43,7 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          console.log('Comparing passwords');
           const isMatch = await bcrypt.compare(credentials.password, user.password);
 
           if (!isMatch) {
@@ -48,13 +53,17 @@ export const authOptions: NextAuthOptions = {
 
           console.log('Login successful for user:', user.email);
 
+          // Convert MongoDB _id to string to ensure proper serialization
+          const userId = user._id.toString();
+          console.log('User ID converted to string:', userId);
+
           return {
-            id: user._id.toString(),
+            id: userId,
             name: user.name,
             email: user.email,
             image: null,
-            isAdmin: user.isAdmin,
-            token: generateToken(user._id.toString())
+            isAdmin: user.isAdmin || false,
+            token: generateToken(userId)
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -77,13 +86,17 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user }) {
       if (user) {
+        console.log('JWT callback - Adding user data to token:', { userId: user.id });
         token.id = user.id;
         token.isAdmin = user.isAdmin;
+        token.name = user.name;
+        token.email = user.email;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
+        console.log('Session callback - Adding token data to session');
         session.user.id = token.id as string;
         session.user.isAdmin = token.isAdmin as boolean;
       }
@@ -136,9 +149,7 @@ export const authOptions: NextAuthOptions = {
       console.warn(`NextAuth warning: ${code}`);
     },
     debug(code, metadata) {
-      if (process.env.DEBUG === 'true') {
-        console.log(`NextAuth debug: ${code}`, metadata);
-      }
+      console.log(`NextAuth debug: ${code}`, metadata);
     },
   },
 };
