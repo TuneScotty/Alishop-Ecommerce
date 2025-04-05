@@ -397,25 +397,34 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
 
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
-    await connectDB();
+    // Add a timeout to the MongoDB connection
+    const connectionPromise = connectDB();
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('MongoDB connection timeout')), 5000);
+    });
+
+    await Promise.race([connectionPromise, timeoutPromise]);
     
     // Get featured products directly from the database
     const featuredProducts = await Product.find({ featured: true })
       .limit(8)
-      .lean();
+      .lean()
+      .exec();
     
     // Get new arrivals (most recent products)
     const newArrivals = await Product.find({})
       .sort({ createdAt: -1 })
       .limit(8)
-      .lean();
+      .lean()
+      .exec();
     
     // Get trending products (you could modify this logic based on your needs)
     // For now, we'll just get products with highest ratings
     const trendingProducts = await Product.find({})
       .sort({ rating: -1 })
       .limit(8)
-      .lean();
+      .lean()
+      .exec();
 
     return {
       props: {
@@ -426,6 +435,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     };
   } catch (error) {
     console.error('Error fetching products:', error);
+    // Return empty arrays for all products if there's an error
     return {
       props: {
         featuredProducts: [],

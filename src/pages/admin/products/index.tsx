@@ -8,27 +8,36 @@ import { useNotification } from '../../../context/NotificationContext';
 import { isAdmin } from '../../../utils/auth';
 import { authOptions } from '../../api/auth/[...nextauth]';
 import { IProduct } from '../../../models/Product';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const { showNotification } = useNotification();
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (status === 'unauthenticated') {
+      router.push('/login?redirect=/admin/products');
+    } else if (status === 'authenticated' && session) {
+      fetchProducts();
+    }
+  }, [status, session]);
 
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
       const response = await axios.get('/api/products');
       if (response.status === 200) {
-        setProducts(response.data.products);
+        setProducts(response.data.products || []);
       }
     } catch (error: any) {
       console.error('Error fetching products:', error);
       showNotification(error.response?.data?.message || 'Failed to fetch products', 'error');
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
@@ -52,6 +61,23 @@ export default function AdminProductsPage() {
       }
     }
   };
+
+  // Ensure products is always an array
+  const safeProducts = Array.isArray(products) ? products : [];
+
+  if (status === 'loading') {
+    return (
+      <Layout title="Admin - Products" description="Manage your products">
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-main"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <Layout title="Admin - Products" description="Manage your products">
@@ -91,7 +117,7 @@ export default function AdminProductsPage() {
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary-main border-t-transparent"></div>
               <p className="mt-2 text-gray-600">Loading products...</p>
             </div>
-          ) : products.length === 0 ? (
+          ) : safeProducts.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-gray-600">No products found.</p>
               <p className="mt-2 text-gray-500">
@@ -121,43 +147,23 @@ export default function AdminProductsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {products.map((product) => (
+                  {safeProducts.map((product) => (
                     <tr key={product._id}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="w-16 h-16 relative">
-                          {product.images && product.images.length > 0 ? (
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-full h-full object-cover rounded"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded">
-                              <span className="text-gray-500 text-xs">No image</span>
-                            </div>
-                          )}
-                        </div>
+                        <img
+                          src={product.images[0] || 'https://via.placeholder.com/150'}
+                          alt={product.name}
+                          className="h-12 w-12 object-cover rounded"
+                        />
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                        <div className="text-sm text-gray-500 truncate max-w-xs">
-                          {product.description.substring(0, 50)}...
-                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
-                        {product.aliExpressPrice && (
-                          <div className="text-xs text-gray-500">
-                            AliExpress: ${product.aliExpressPrice.toFixed(2)}
-                          </div>
-                        )}
+                        <div className="text-sm text-gray-900">${product.price}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          product.countInStock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                          {product.countInStock > 0 ? `${product.countInStock} in stock` : 'Out of stock'}
-                        </span>
+                        <div className="text-sm text-gray-900">{product.countInStock}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
@@ -170,19 +176,10 @@ export default function AdminProductsPage() {
                           <button
                             onClick={() => handleDeleteProduct(product._id)}
                             disabled={isDeleting === product._id}
-                            className={`text-red-600 hover:text-red-900 ${
-                              isDeleting === product._id ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
                           >
                             {isDeleting === product._id ? 'Deleting...' : 'Delete'}
                           </button>
-                          <Link
-                            href={`/products/${product._id}`}
-                            target="_blank"
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            View
-                          </Link>
                         </div>
                       </td>
                     </tr>
@@ -204,13 +201,15 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   if (!session || !isAdmin(session)) {
     return {
       redirect: {
-        destination: '/login',
+        destination: '/login?redirect=/admin/products',
         permanent: false,
       },
     };
   }
   
   return {
-    props: {},
+    props: {
+      session: JSON.parse(JSON.stringify(session))
+    },
   };
 }; 

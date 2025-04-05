@@ -1,7 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   output: 'standalone',
   poweredByHeader: false,
   images: {
@@ -37,7 +36,7 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     MONGODB_URI: process.env.MONGODB_URI,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://srv751233.hstgr.cloud:3000',
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://srv751233.hstgr.cloud',
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     JWT_SECRET: process.env.JWT_SECRET,
   },

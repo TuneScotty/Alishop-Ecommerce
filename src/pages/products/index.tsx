@@ -15,9 +15,12 @@ interface ProductsPageProps {
   page: number;
 }
 
-export default function ProductsPage({ products, pages, page }: ProductsPageProps) {
+export default function ProductsPage({ products = [], pages = 1, page = 1 }: ProductsPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const { showNotification } = useNotification();
+  
+  // Ensure products is always an array
+  const safeProducts = Array.isArray(products) ? products : [];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +106,7 @@ export default function ProductsPage({ products, pages, page }: ProductsPageProp
             </form>
           </div>
 
-          {products.length === 0 ? (
+          {safeProducts.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
               <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No Products Found</h2>
               <p className="text-gray-600 dark:text-gray-400">
@@ -113,7 +116,7 @@ export default function ProductsPage({ products, pages, page }: ProductsPageProp
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-                {products.map((product) => (
+                {safeProducts.map((product) => (
                   <ProductCard key={product._id} product={product} onAddToCart={addToCart} />
                 ))}
               </div>

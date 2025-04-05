@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import Google Fonts - Enhanced with premium fonts used by top brands */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Dancing+Script:wght@400;700&family=Montserrat:wght@300;400;500;600;700;800&family=Raleway:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
-
 /* Base styles */
 :root {
   --primary-light: #3B82F6;
@@ -34,12 +31,12 @@
   --header-height: 70px;
   
   /* Font families */
-  --font-primary: 'Inter', sans-serif;
-  --font-secondary: 'Playfair Display', serif;
-  --font-accent: 'Dancing Script', cursive;
-  --font-heading: 'Montserrat', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
-  --font-alt: 'Raleway', sans-serif;
+  --font-primary: var(--font-inter);
+  --font-secondary: var(--font-playfair);
+  --font-accent: var(--font-dancing);
+  --font-heading: var(--font-montserrat);
+  --font-body: var(--font-dm-sans);
+  --font-alt: var(--font-raleway);
   
   /* Theme colors - light mode defaults */
   --bg-primary: #ffffff;

@@ -26,6 +26,7 @@ if (!cached) {
 
 async function dbConnect() {
   console.log('Creating new MongoDB connection...');
+  console.log('MongoDB URI:', MONGODB_URI?.replace(/:[^:]*@/, ':***@'));
 
   if (cached.conn) {
     console.log('Using existing database connection');
@@ -33,65 +34,40 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
-    // Force non-SSL connection with simplified options
     const opts = {
-      ssl: false,
-      tls: false,
-      directConnection: true, // Use direct connection to avoid srv resolution
-      serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
-      // Ensure proper date and _id serialization
-      bufferCommands: false, // Disable command buffering
-      autoIndex: true, // Build indexes
-      maxPoolSize: 10, // Maintain up to 10 socket connections
+      bufferCommands: false,
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      family: 4,
+      retryWrites: true,
+      retryReads: true
     };
 
-    // Strip any existing options and rebuild connection string
-    let uri = MONGODB_URI as string;
-    // Remove any query parameters
-    if (uri.includes('?')) {
-      uri = uri.substring(0, uri.indexOf('?'));
-    }
-    // Add our safe parameters
-    uri += '?ssl=false&directConnection=true';
+    console.log('Attempting MongoDB connection with options:', JSON.stringify(opts, null, 2));
 
-    console.log('MongoDB connection being established with patched settings');
-
-    console.log('Connecting to MongoDB with URI structure:', uri.replace(/:[^:]*@/, ':***@'));
-    cached.promise = mongoose.connect(uri, opts)
+    cached.promise = mongoose.connect(MONGODB_URI!, opts)
       .then((mongoose) => {
         console.log('MongoDB connected successfully');
-
-        // Set up Mongoose to convert ids to strings
-        mongoose.set('toJSON', {
-          virtuals: true,
-          transform: (_, converted) => {
-            if (converted._id) {
-              converted.id = converted._id.toString();
-              delete converted._id;
-            }
-            return converted;
-          }
-        });
-
         return mongoose;
       })
       .catch((error) => {
-        console.error('MongoDB connection error:', error);
+        console.error('MongoDB connection error details:', {
+          name: error.name,
+          message: error.message,
+          code: error.code,
+          codeName: error.codeName,
+          stack: error.stack
+        });
         cached.promise = null;
         throw error;
       });
-  } else {
-    console.log('Using existing database connection promise');
   }
 
   try {
-    console.log('Waiting for database connection to resolve');
     cached.conn = await cached.promise;
-    console.log('Database connection resolved successfully');
   } catch (e) {
     cached.promise = null;
-    console.error('Error resolving database connection:', e);
     throw e;
   }
 
