@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import { CartItem } from '../context/CartContext';
 import ExternalImage from '../components/ExternalImage';
 import OrderSummary from '../components/OrderSummary';
+import React from 'react';
 
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -14,7 +15,7 @@ export default function CartPage() {
     try {
       const storedCart = localStorage.getItem('cart');
       if (storedCart) {
-        const parsedCart = JSON.parse(storedCart);
+        const parsedCart = JSON.parse(storedCart).map((it: any) => ({ ...it, price: Number(it.price) || 0 }));
         setCartItems(parsedCart);
       }
     } catch (error) {
@@ -126,10 +127,10 @@ export default function CartPage() {
                       </div>
                       <div className="text-right">
                         <p className="text-lg font-medium text-gray-800 dark:text-white">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          {((Number(item.price) || 0) * item.quantity).toFixed(2)}
                         </p>
                         <p className="text-sm text-gray-500 dark:text-gray-400">
-                          ${item.price.toFixed(2)} each
+                          {(Number(item.price) || 0).toFixed(2)} each
                         </p>
                       </div>
                     </div>

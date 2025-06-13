@@ -13,7 +13,12 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#ffffff",
+  "start_url": "/",
+  "theme_color": "#2563EB",
   "background_color": "#ffffff",
-  "display": "standalone"
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "description": "AliShop Mobile Experience",
+  "prefer_related_applications": false
 } 

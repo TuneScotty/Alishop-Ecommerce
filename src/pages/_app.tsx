@@ -9,6 +9,7 @@ import Head from 'next/head';
 import { validateEnv } from '../utils/validateEnv';
 import AdminRouteProtection from '../components/AdminRouteProtection';
 import CartConsistency from '../components/CartConsistency';
+import { useEffect, useState } from 'react';
 
 // Add global type for mongoose
 declare global {
@@ -90,16 +91,53 @@ function AppContent({ Component, pageProps }: { Component: any; pageProps: any }
 }
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  // Register service worker and detect standalone mode
+  useEffect(() => {
+    // Register service worker
+    if ('serviceWorker' in navigator && typeof window !== 'undefined') {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').then(
+          function(registration) {
+            console.log('Service Worker registration successful with scope: ', registration.scope);
+          },
+          function(err) {
+            console.log('Service Worker registration failed: ', err);
+          }
+        );
+      });
+    }
+    
+    // Detect if app is in standalone mode (installed PWA)
+    if (window.matchMedia('(display-mode: standalone)').matches || 
+        // @ts-ignore - Safari specific property
+        window.navigator.standalone === true) {
+      setIsStandalone(true);
+      console.log('App is running in standalone/installed mode');
+    }
+  }, []);
+
   return (
     <SessionProvider session={session}>
       <ThemeProvider>
         <NotificationProvider>
           <CartProvider>
-            <AdminRouteProtection>
-              <CartConsistency>
-                <AppContent Component={Component} pageProps={pageProps} />
-              </CartConsistency>
-            </AdminRouteProtection>
+            <div className={`${playfairDisplay.variable} ${poppins.variable} ${dancingScript.variable} ${montserrat.variable} ${raleway.variable} ${dmSans.variable} ${inter.variable}`}>
+              <Head>
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+              </Head>
+              {isStandalone && (
+                <div className="bg-green-500 text-white text-center py-1 text-sm">
+                  Running as installed app
+                </div>
+              )}
+              <AdminRouteProtection>
+                <CartConsistency>
+                  <Component {...pageProps} />
+                </CartConsistency>
+              </AdminRouteProtection>
+            </div>
           </CartProvider>
         </NotificationProvider>
       </ThemeProvider>
