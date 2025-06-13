@@ -4,6 +4,8 @@ A production-ready, high-performance e-commerce application built with Next.js 1
 
 ## Table of Contents
 - [Features](#features)
+- [Screenshot](#screenshot)
+- [Demo](#demo)
 - [Tech Stack](#tech-stack)
 - [Folder Structure](#folder-structure)
 - [Architecture Overview](#architecture-overview)
@@ -26,6 +28,13 @@ A production-ready, high-performance e-commerce application built with Next.js 1
 - 💳 **Secure payments** through Tranzila
 - 🤝 **AliExpress sourcing** – import price, URL & auto-markup
 - 📈 **Analytics ready** – easily connect your favourite tools
+
+## Demo
+[![Watch the demo on YouTube](https://img.youtube.com/vi/7Rz04jK3ULc/hqdefault.jpg)](https://youtu.be/7Rz04jK3ULc)
+
+## Screenshot
+ 
+![Landing](public/readme/hero.png)
 
 ## Tech Stack
 ### Front-end

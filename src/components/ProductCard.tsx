@@ -44,7 +44,6 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
       countInStock: product.countInStock,
     }, 1);
     
-    showNotification(`${product.name} added to cart`, 'success', 3000);
     setShowCartPopup(true);
     
     // Also call the onAddToCart prop if provided

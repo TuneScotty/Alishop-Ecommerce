@@ -124,7 +124,20 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = (id: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item._id !== id));
+    setCartItems(prevItems => {
+      const updated = prevItems.filter(item => item._id !== id);
+      // Sync with sessionStorage to keep legacy pages consistent
+      if (typeof window !== 'undefined') {
+        try {
+          const sessionCart = JSON.parse(sessionStorage.getItem('cart') || '[]');
+          const filtered = sessionCart.filter((it: any) => (it._id || it.product?._id) !== id);
+          sessionStorage.setItem('cart', JSON.stringify(filtered));
+        } catch (e) {
+          console.error('Failed to sync sessionStorage cart', e);
+        }
+      }
+      return updated;
+    });
   };
 
   const updateQuantity = (id: string, quantity: number) => {

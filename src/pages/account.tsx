@@ -137,7 +137,7 @@ export default function AccountPage() {
   
   const fetchPreferences = async () => {
     try {
-      const response = await axios.get('/api/user/preferences');
+      const response = await axios.get('/api/users/preferences');
       if (response.data) {
         setCurrency(response.data.currency || 'USD');
         setLanguage(response.data.language || 'en');
@@ -183,7 +183,7 @@ export default function AccountPage() {
     setUpdating(true);
     try {
       // Save to API
-      await axios.post('/api/user/preferences', {
+      await axios.post('/api/users/preferences', {
         currency,
         language,
       });

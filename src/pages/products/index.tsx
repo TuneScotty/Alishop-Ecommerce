@@ -42,7 +42,6 @@ export default function ProductsPage({ products = [], pages = 1, page = 1 }: Pro
       
       if (existingItemIndex >= 0) {
         existingCart[existingItemIndex].quantity = (existingCart[existingItemIndex].quantity || existingCart[existingItemIndex].qty || 0) + 1;
-        showNotification(`Updated quantity in cart (${existingCart[existingItemIndex].quantity}x)`, 'success');
       } else {
         existingCart.push({
           product: product,

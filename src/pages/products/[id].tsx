@@ -112,8 +112,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       
       if (existingItemIndex >= 0) {
         // Update quantity if product already in cart
-        existingCart[existingItemIndex].quantity = (existingCart[existingItemIndex].quantity || existingCart[existingItemIndex].qty || 0) + quantity;
-        showNotification(`Updated quantity in cart (${existingCart[existingItemIndex].quantity}x)`, 'success');
+        existingCart[existingItemIndex].quantity = (existingCart[existingItemIndex].quantity || existingCart[existingItemIndex].qty || 0) + 1;
+        // Removed duplicate notification
       } else {
         // Add new item to cart
         existingCart.push({

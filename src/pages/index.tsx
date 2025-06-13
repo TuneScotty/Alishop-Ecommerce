@@ -67,14 +67,12 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
       if (existingItemIndex >= 0) {
         // Update quantity if product already in cart
         existingCart[existingItemIndex].quantity = (existingCart[existingItemIndex].quantity || existingCart[existingItemIndex].qty || 0) + 1;
-        showNotification(`Updated quantity in cart (${existingCart[existingItemIndex].quantity}x)`, 'success');
       } else {
         // Add new item to cart
         existingCart.push({
           product: product,
           quantity: 1
         });
-        showNotification(`${product.name} added to cart`, 'success');
       }
       
       // Save updated cart to sessionStorage
@@ -82,6 +80,9 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
       
       // Dispatch custom event to notify other components
       window.dispatchEvent(new Event('cartUpdated'));
+      
+      // Show notification only once
+      showNotification(`${product.name} added to cart`, 'success');
     } catch (error) {
       console.error('Error adding to cart:', error);
       showNotification('Failed to add item to cart', 'error');
