@@ -42,7 +42,6 @@ logs
 
 # PowerShell scripts
 *.ps1
-*.md
 
 # MongoDB
 mongodb_credentials.txt
@@ -52,16 +51,21 @@ mongodb_credentials.txt
 
 # TypeScript
 *.tsbuildinfo
-*.sh
 
-# Only ignore local development .env
+# Environment files (keep production secrets out of VCS)
 .env
+.env.*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# gitignore
-.gitignore
+# pnpm store
+.pnpm-store
 
+# Turbopack cache (Next.js 15)
+.turbo/
+
+# Avoid committing OS/binary files
 *.bat
-*.bat
-*.bat
-.env.production
 *.local
