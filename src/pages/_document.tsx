@@ -1,5 +1,12 @@
+// Next.js document component with PWA configuration, meta tags, and font preloading
 import { Html, Head, Main, NextScript } from 'next/document';
 
+/**
+ * Next.js document component with PWA configuration, meta tags, and font preloading
+ * @returns JSX.Element - HTML document structure with PWA manifest, icons, and font optimization
+ * Purpose: Provides document-level configuration including PWA settings, mobile optimization,
+ * favicon setup, and Google Fonts preloading for performance enhancement
+ */
 export default function Document() {
   return (
     <Html lang="en">

@@ -1,8 +1,16 @@
+// Admin route protection component that restricts access to admin-only pages
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import { useNotification } from '../context/NotificationContext';
 
+/**
+ * Admin route protection component that restricts access to admin-only pages
+ * @param children - React components to render if user has admin access
+ * @returns JSX.Element - Protected content or redirects non-admin users
+ * Purpose: Provides route-level security by checking user admin status and redirecting
+ * unauthorized users away from admin pages with error notification
+ */
 export default function AdminRouteProtection({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { data: sessionData } = useSession();

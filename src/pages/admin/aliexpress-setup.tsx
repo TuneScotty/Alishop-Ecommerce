@@ -1,3 +1,9 @@
+/**
+ * Admin AliExpress setup page for configuring AliExpress Open Platform API integration.
+ * Provides credential management, authentication flow, markup configuration, and setup
+ * instructions for enabling AliExpress product import and order fulfillment functionality.
+ */
+
 import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -8,6 +14,11 @@ import { isAdmin } from '../../utils/auth';
 import { authOptions } from '../api/auth/[...nextauth]';
 import { serializeSession } from '../../utils/session';
 
+/**
+ * AliExpressSetupPage component renders the AliExpress API configuration interface.
+ * Includes credential input forms, authentication URL generation, markup percentage settings,
+ * and comprehensive setup instructions for AliExpress Open Platform integration.
+ */
 export default function AliExpressSetupPage() {
   const [appKey, setAppKey] = useState('');
   const [appSecret, setAppSecret] = useState('');
@@ -34,6 +45,10 @@ export default function AliExpressSetupPage() {
     loadAuthUrl();
   }, []);
 
+  /**
+   * Handles saving AliExpress API credentials and markup settings with validation.
+   * @param e - React form submission event
+   */
   const handleSaveCredentials = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -211,6 +226,12 @@ export default function AliExpressSetupPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for AliExpress setup access.
+ * Ensures only authenticated admin users can configure AliExpress API integration settings.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Props object with serialized session data or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

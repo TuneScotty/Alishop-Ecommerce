@@ -1,7 +1,13 @@
+// CORS middleware for enabling cross-origin requests in API routes
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// CORS middleware for API routes
-// @param handler - API route handler to wrap
+/**
+ * CORS middleware that enables cross-origin requests for API routes
+ * @param handler - API route handler function to wrap with CORS headers
+ * @returns Wrapped handler with CORS headers and OPTIONS method handling
+ * Purpose: Provides cross-origin resource sharing support for API endpoints with
+ * proper preflight request handling and security headers
+ */
 export const corsMiddleware = (handler: Function) =>
   async (req: NextApiRequest, res: NextApiResponse) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');

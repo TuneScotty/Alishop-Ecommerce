@@ -1,3 +1,4 @@
+// Tranzila payment form component with multiple payment methods and hosted fields integration
 import { useState, useEffect, useRef } from 'react';
 import { useNotification } from '../context/NotificationContext';
 import tranzilaService, { PaymentMethod } from '../services/tranzilaService';
@@ -30,6 +31,16 @@ declare global {
   }
 }
 
+/**
+ * Tranzila payment form component with multiple payment methods and hosted fields integration
+ * @param onSuccess - Callback function called when payment processing succeeds
+ * @param onError - Callback function called when payment processing fails
+ * @param customerInfo - Customer information for payment processing
+ * @param returnUrl - URL to redirect after payment completion
+ * @returns JSX.Element - Complete payment form with method selection and secure processing
+ * Purpose: Provides secure payment processing through Tranzila with support for credit cards,
+ * Bit, PayPal, Apple Pay, Google Pay, and bank transfers using hosted fields for PCI compliance
+ */
 const TranzilaPaymentForm: React.FC<TranzilaPaymentFormProps> = ({ 
   onSuccess, 
   onError,
@@ -70,6 +81,10 @@ const TranzilaPaymentForm: React.FC<TranzilaPaymentFormProps> = ({
     }
   }, [isScriptLoaded, selectedPaymentMethod]);
 
+  /**
+   * Initializes Tranzila hosted fields for secure credit card processing
+   * Purpose: Sets up secure payment form with PCI-compliant hosted fields
+   */
   const initializeTranzila = () => {
     if (!window.TranzilaHostedFields) {
       onError('Payment processor not available. Please try again later.');
@@ -163,6 +178,10 @@ const TranzilaPaymentForm: React.FC<TranzilaPaymentFormProps> = ({
     }
   };
 
+  /**
+   * Handles alternative payment methods (non-credit card)
+   * Purpose: Processes payments for Bit, PayPal, Apple Pay, Google Pay, and bank transfers
+   */
   const handleAlternativePayment = () => {
     setIsLoading(true);
     
@@ -182,6 +201,11 @@ const TranzilaPaymentForm: React.FC<TranzilaPaymentFormProps> = ({
     }
   };
 
+  /**
+   * Returns display label for payment method
+   * @param method - Payment method identifier
+   * Purpose: Provides user-friendly labels for payment method selection
+   */
   const getPaymentMethodLabel = (method: PaymentMethod): string => {
     switch (method) {
       case 'credit_card': return 'Credit Card';
@@ -194,6 +218,11 @@ const TranzilaPaymentForm: React.FC<TranzilaPaymentFormProps> = ({
     }
   };
 
+  /**
+   * Returns icon path for payment method
+   * @param method - Payment method identifier
+   * Purpose: Provides visual icons for payment method selection interface
+   */
   const getPaymentMethodIcon = (method: PaymentMethod): string => {
     switch (method) {
       case 'credit_card': return '/images/payment/credit-card.svg';

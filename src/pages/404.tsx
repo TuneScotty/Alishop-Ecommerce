@@ -1,6 +1,12 @@
+// Custom 404 error page with navigation back to homepage
 import { NextPage } from 'next';
 import Link from 'next/link';
 
+/**
+ * Custom 404 error page with navigation back to homepage
+ * @returns JSX.Element - 404 error page with styled message and home link
+ * Purpose: Provides user-friendly error page when requested routes are not found
+ */
 const NotFoundPage: NextPage = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">

@@ -1,3 +1,4 @@
+// Shopping cart page with item management and checkout integration
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Layout from '../components/Layout';
@@ -6,6 +7,11 @@ import ExternalImage from '../components/ExternalImage';
 import OrderSummary from '../components/OrderSummary';
 import React from 'react';
 
+/**
+ * Shopping cart page with item management and checkout integration
+ * @returns JSX.Element - Cart page with item list, quantity controls, and order summary
+ * Purpose: Displays cart contents with quantity management, item removal, and checkout navigation
+ */
 export default function CartPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,6 +31,11 @@ export default function CartPage() {
     }
   }, []);
 
+  /**
+   * Removes item from cart and updates localStorage
+   * @param id - Product ID to remove from cart
+   * Purpose: Handles item removal with cart synchronization
+   */
   const removeFromCart = (id: string) => {
     const updatedCart = cartItems.filter((item) => item._id !== id);
     setCartItems(updatedCart);
@@ -32,6 +43,12 @@ export default function CartPage() {
     window.dispatchEvent(new Event('cartUpdated'));
   };
 
+  /**
+   * Updates item quantity with stock validation
+   * @param id - Product ID to update
+   * @param quantity - New quantity value
+   * Purpose: Manages quantity changes with stock limits and cart synchronization
+   */
   const updateQuantity = (id: string, quantity: number) => {
     const updatedCart = cartItems.map((item) =>
       item._id === id ? { ...item, quantity: Math.max(1, Math.min(quantity, item.countInStock)) } : item

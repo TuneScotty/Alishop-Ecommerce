@@ -1,3 +1,4 @@
+// User account management page with profile, orders, addresses, and preferences
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/router';
@@ -43,6 +44,12 @@ interface UserPreferences {
   language: string;
 }
 
+/**
+ * User account management page with profile, orders, addresses, and preferences
+ * @returns JSX.Element - Complete account dashboard with tabbed interface
+ * Purpose: Provides comprehensive user account management including profile editing,
+ * order history viewing, address management, and user preferences configuration
+ */
 export default function AccountPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -104,6 +111,10 @@ export default function AccountPage() {
     }
   }, [session]);
   
+  /**
+   * Fetches user profile data and populates form fields
+   * Purpose: Loads user information from API and initializes form state
+   */
   const fetchUserData = async () => {
     try {
       const { data } = await axios.get('/api/users/profile');
@@ -126,6 +137,10 @@ export default function AccountPage() {
     }
   };
   
+  /**
+   * Fetches user's order history from API
+   * Purpose: Loads order data for display in orders tab
+   */
   const fetchOrders = async () => {
     try {
       const { data } = await axios.get('/api/orders/myorders');
@@ -135,6 +150,10 @@ export default function AccountPage() {
     }
   };
   
+  /**
+   * Fetches user preferences with localStorage fallback
+   * Purpose: Loads currency and language preferences from API or localStorage
+   */
   const fetchPreferences = async () => {
     try {
       const response = await axios.get('/api/users/preferences');
@@ -158,6 +177,11 @@ export default function AccountPage() {
     }
   };
   
+  /**
+   * Updates user profile information via API
+   * @param e - Form submission event
+   * Purpose: Saves profile changes including name, email, and phone
+   */
   const updateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setUpdating(true);
@@ -179,6 +203,10 @@ export default function AccountPage() {
     }
   };
   
+  /**
+   * Saves user preferences to API and localStorage
+   * Purpose: Persists currency and language preferences with fallback storage
+   */
   const savePreferences = async () => {
     setUpdating(true);
     try {
@@ -214,6 +242,11 @@ export default function AccountPage() {
     }
   };
   
+  /**
+   * Handles tab navigation with URL synchronization
+   * @param tab - Target tab identifier
+   * Purpose: Updates active tab and syncs with browser URL
+   */
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     router.push({
@@ -230,7 +263,10 @@ export default function AccountPage() {
     { id: 'preferences', label: 'Preferences' },
   ];
   
-  // Function to handle logout and clear cart
+  /**
+   * Handles user logout with cart cleanup
+   * Purpose: Clears cart data and signs out user with redirect to homepage
+   */
   const handleLogout = () => {
     // Clear cart from localStorage
     localStorage.removeItem('cart');

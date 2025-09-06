@@ -1,8 +1,14 @@
+// Settings page redirect to account preferences tab
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../components/Layout';
 import { useNotification } from '../context/NotificationContext';
 
+/**
+ * Settings page redirect to account preferences tab
+ * @returns JSX.Element - Loading page with automatic redirect to account settings
+ * Purpose: Redirects users from legacy settings URL to the new account page preferences tab
+ */
 export default function SettingsPage() {
   const router = useRouter();
   const { showNotification } = useNotification();

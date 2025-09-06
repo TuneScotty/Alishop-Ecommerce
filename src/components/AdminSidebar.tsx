@@ -1,9 +1,21 @@
+// Admin sidebar navigation with hierarchical menu structure and active state management
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+/**
+ * Admin sidebar navigation with hierarchical menu structure and active state management
+ * @returns JSX.Element - Sidebar navigation with categorized admin links and active highlighting
+ * Purpose: Provides navigation interface for admin dashboard with organized sections for
+ * products, orders, users, and settings with visual active state indicators
+ */
 export default function AdminSidebar() {
   const router = useRouter();
   
+  /**
+   * Determines if navigation link should be highlighted as active
+   * @param path - Route path to check against current router pathname
+   * Purpose: Provides visual feedback for current page location in admin navigation
+   */
   const isActive = (path: string) => {
     return router.pathname === path || router.pathname.startsWith(`${path}/`);
   };

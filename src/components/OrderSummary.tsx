@@ -1,3 +1,4 @@
+// Order summary component with pricing calculations and checkout navigation
 import React from 'react';
 import Link from 'next/link';
 import { CartItem } from '../context/CartContext';
@@ -8,12 +9,25 @@ interface OrderSummaryProps {
   showEditButton?: boolean;
 }
 
+/**
+ * Order summary component with pricing calculations and checkout navigation
+ * @param cartItems - Array of cart items for order calculation
+ * @param showCheckoutButton - Whether to display proceed to checkout button
+ * @param showEditButton - Whether to display edit cart button
+ * @returns JSX.Element - Order summary with itemized pricing and action buttons
+ * Purpose: Displays order totals including subtotal, tax, shipping, and provides
+ * navigation to checkout or cart editing based on configuration
+ */
 export default function OrderSummary({ 
   cartItems, 
   showCheckoutButton = true,
   showEditButton = false 
 }: OrderSummaryProps) {
   
+  /**
+   * Calculates order subtotal from cart items
+   * Purpose: Computes total price before tax and shipping
+   */
   const calculateSubtotal = () => {
     return cartItems.reduce(
       (acc, item) => acc + item.price * item.quantity,
@@ -21,14 +35,26 @@ export default function OrderSummary({
     );
   };
 
+  /**
+   * Calculates tax amount based on subtotal
+   * Purpose: Applies 10% tax rate to order subtotal
+   */
   const calculateTax = () => {
     return calculateSubtotal() * 0.1; // 10% tax
   };
 
+  /**
+   * Calculates shipping cost for order
+   * Purpose: Returns shipping cost (currently free for all orders)
+   */
   const calculateShipping = () => {
     return cartItems.length > 0 ? 0 : 0; // Free shipping
   };
 
+  /**
+   * Calculates final order total including all fees
+   * Purpose: Combines subtotal, tax, and shipping for final amount
+   */
   const calculateTotal = () => {
     return calculateSubtotal() + calculateTax() + calculateShipping();
   };

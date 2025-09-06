@@ -1,3 +1,4 @@
+// Cart summary component displaying order totals, tax calculations, and checkout navigation
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,6 +8,13 @@ interface CartSummaryProps {
   onClose?: () => void;
 }
 
+/**
+ * Cart summary component displaying order totals, tax calculations, and checkout navigation
+ * @param onClose - Optional callback function to close the cart summary modal/popup
+ * @returns JSX.Element - Cart summary with itemized pricing, tax calculation, and action buttons
+ * Purpose: Provides order summary with subtotal, shipping, tax calculations, and navigation
+ * to cart editing and checkout pages, with empty cart state handling
+ */
 export default function CartSummary({ onClose }: CartSummaryProps) {
   const { cartItems, totalPrice } = useCart();
   

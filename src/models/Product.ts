@@ -1,3 +1,4 @@
+// Product model with AliExpress integration, reviews, and automatic slug generation
 import mongoose from 'mongoose';
 
 export interface IProduct extends mongoose.Document {
@@ -124,7 +125,12 @@ const productSchema = new mongoose.Schema<IProduct>(
   }
 );
 
-// Create slug from name before saving
+/**
+ * Generates URL-friendly slug from product name and sets primary image from images array
+ * @param next - Mongoose middleware next function to continue the save operation
+ * Purpose: Automatically creates SEO-friendly URL slug from product name by converting to lowercase,
+ * replacing special characters with hyphens, and sets the first image as primary image if none specified
+ */
 productSchema.pre('save', function (next) {
   if (this.isModified('name') || !this.slug) {
     this.slug = this.name
@@ -134,7 +140,6 @@ productSchema.pre('save', function (next) {
       .replace(/^-|-$/g, '');
   }
   
-  // If no image is set but images array has items, use the first one
   if (this.isModified('images') && (!this.image || this.image === '') && this.images && this.images.length > 0) {
     this.image = this.images[0];
   }
@@ -142,7 +147,6 @@ productSchema.pre('save', function (next) {
   next();
 });
 
-// Check if the model exists before creating it
 const Product = mongoose.models.Product || mongoose.model<IProduct>('Product', productSchema);
 
 export default Product as mongoose.Model<IProduct>; 

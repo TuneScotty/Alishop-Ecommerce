@@ -1,3 +1,4 @@
+// Tranzila payment processing service with multiple payment methods and secure transaction handling
 import axios from 'axios';
 
 export interface TranzilaPaymentResult {
@@ -30,6 +31,11 @@ export interface TranzilaPaymentRequest {
   returnUrl?: string; // For redirect-based payment methods
 }
 
+/**
+ * Tranzila payment processing service with multiple payment methods and secure transaction handling
+ * Purpose: Provides comprehensive payment processing capabilities through Tranzila gateway with
+ * support for credit cards, digital wallets, and alternative payment methods
+ */
 export class TranzilaService {
   private apiUrl: string;
   private terminalName: string;
@@ -41,6 +47,12 @@ export class TranzilaService {
     this.terminalPassword = process.env.TRANZILA_TERMINAL_PASSWORD || '';
   }
 
+  /**
+   * Processes payment through Tranzila gateway with comprehensive error handling
+   * @param paymentRequest - Payment details including amount, customer info, and payment method
+   * @returns Payment result with success status, payment ID, or error details
+   * Purpose: Handles secure payment processing with support for multiple payment methods
+   */
   async processPayment(paymentRequest: TranzilaPaymentRequest): Promise<TranzilaPaymentResult> {
     try {
       if (!paymentRequest) {

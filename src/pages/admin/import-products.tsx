@@ -1,3 +1,9 @@
+/**
+ * Admin product import page providing multiple methods for importing products from AliExpress.
+ * Features URL import, ID import, product search with preview, markup configuration, and
+ * batch import functionality with real-time search results and pricing calculations.
+ */
+
 import { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -8,6 +14,11 @@ import { isAdmin } from '../../utils/auth';
 import { authOptions } from '../api/auth/[...nextauth]';
 import { serializeSession } from '../../utils/session';
 
+/**
+ * ImportProductsPage component renders comprehensive AliExpress product import interface.
+ * Provides three import methods: URL-based, ID-based, and search-based with product previews,
+ * automatic markup calculation, and batch import capabilities for efficient product management.
+ */
 export default function ImportProductsPage() {
   const [productUrl, setProductUrl] = useState('');
   const [productId, setProductId] = useState('');
@@ -18,6 +29,10 @@ export default function ImportProductsPage() {
   const [markupPercentage, setMarkupPercentage] = useState(30);
   const { showNotification } = useNotification();
 
+  /**
+   * Handles product import using AliExpress product URL with markup application.
+   * @param e - React form submission event
+   */
   const handleImportByUrl = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -46,6 +61,10 @@ export default function ImportProductsPage() {
     }
   };
 
+  /**
+   * Handles product import using AliExpress product ID with markup application.
+   * @param e - React form submission event
+   */
   const handleImportById = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -74,6 +93,10 @@ export default function ImportProductsPage() {
     }
   };
 
+  /**
+   * Handles product search on AliExpress platform with keyword-based queries.
+   * @param e - React form submission event
+   */
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -102,6 +125,10 @@ export default function ImportProductsPage() {
     }
   };
 
+  /**
+   * Handles product import from search results with optimistic UI updates.
+   * @param productId - AliExpress product ID to import from search results
+   */
   const handleImportFromSearch = async (productId: string) => {
     const product = searchResults.find((p: any) => p.id === productId);
     
@@ -332,6 +359,12 @@ export default function ImportProductsPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for product import access.
+ * Ensures only authenticated admin users can import products from AliExpress platform.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Props object with serialized session data or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

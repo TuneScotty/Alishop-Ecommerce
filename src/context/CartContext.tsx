@@ -1,3 +1,4 @@
+// Shopping cart context provider with localStorage persistence and cart management functionality
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { IProduct } from '../models/Product';
 import axios from 'axios';
@@ -21,7 +22,6 @@ export interface SimpleCartItem {
   quantity: number;
 }
 
-// Interface for cart data stored in sessionStorage
 interface StoredCartItem {
   productId: string;
   quantity: number;
@@ -49,8 +49,19 @@ const CartContext = createContext<CartContextType>({
   totalItems: 0,
 });
 
+/**
+ * Custom hook to access cart context functionality
+ * @returns CartContextType - Cart state and methods for cart operations
+ * Purpose: Provides easy access to cart context throughout the application
+ */
 export const useCart = () => useContext(CartContext);
 
+/**
+ * Cart context provider component that manages shopping cart state and operations
+ * @param children - React child components that will have access to cart context
+ * Purpose: Provides cart functionality including add/remove items, quantity updates, localStorage persistence,
+ * and cart totals calculation for the entire application
+ */
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -90,6 +101,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cartItems, isInitialized]);
 
+  /**
+   * Adds product to cart or updates quantity if already exists
+   * @param product - Product object containing product details
+   * @param quantity - Number of items to add to cart
+   * Purpose: Handles adding products to cart with stock validation and quantity updates
+   */
   const addToCart = (product: any, quantity: number) => {
     setCartItems(prevItems => {
       // Check if item already exists in cart
@@ -123,6 +140,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  /**
+   * Removes product from cart by product ID
+   * @param id - Product ID to remove from cart
+   * Purpose: Completely removes item from cart and syncs with sessionStorage for legacy compatibility
+   */
   const removeFromCart = (id: string) => {
     setCartItems(prevItems => {
       const updated = prevItems.filter(item => item._id !== id);
@@ -140,6 +162,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  /**
+   * Updates quantity of specific cart item with stock validation
+   * @param id - Product ID to update quantity for
+   * @param quantity - New quantity value (min 1, max countInStock)
+   * Purpose: Modifies item quantity while ensuring it stays within valid bounds
+   */
   const updateQuantity = (id: string, quantity: number) => {
     setCartItems(prevItems => 
       prevItems.map(item => 
@@ -150,6 +178,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
   };
 
+  /**
+   * Clears all items from cart and removes localStorage data
+   * Purpose: Empties cart completely for logout or order completion scenarios
+   */
   const clearCart = () => {
     setCartItems([]);
     localStorage.removeItem('cart');

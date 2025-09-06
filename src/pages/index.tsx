@@ -1,3 +1,4 @@
+// Homepage component with hero section, product showcases, and newsletter subscription
 import { useState, useEffect, useRef } from 'react';
 import { GetServerSideProps } from 'next';
 import Link from 'next/link';
@@ -17,6 +18,15 @@ interface HomeProps {
   trendingProducts: IProduct[];
 }
 
+/**
+ * Homepage component with hero section, product showcases, and newsletter subscription
+ * @param featuredProducts - Array of featured products to display
+ * @param newArrivals - Array of newest products to showcase
+ * @param trendingProducts - Array of trending/popular products
+ * @returns JSX.Element - Complete homepage with hero, product sections, and features
+ * Purpose: Serves as the main landing page with product discovery, promotional content,
+ * and user engagement features including parallax effects and responsive design
+ */
 export default function Home({ featuredProducts = [], newArrivals = [], trendingProducts = [] }: HomeProps) {
   const { showNotification } = useNotification();
   const [isLoaded, setIsLoaded] = useState(false);
@@ -48,7 +58,11 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
     setIsLoaded(true);
   }, []);
   
-  // Add to cart handler
+  /**
+   * Handles adding products to cart with sessionStorage integration
+   * @param product - Product object to add to cart
+   * Purpose: Manages cart operations with quantity updates and user notifications
+   */
   const addToCart = (product: IProduct) => {
     try {
       if (!product || !product._id) {
@@ -396,6 +410,11 @@ export default function Home({ featuredProducts = [], newArrivals = [], trending
   );
 }
 
+/**
+ * Server-side data fetching for homepage product collections
+ * @returns Props containing featured, new arrivals, and trending products
+ * Purpose: Fetches product data at request time with database connection timeout handling
+ */
 export const getServerSideProps: GetServerSideProps = async () => {
   try {
     // Add a timeout to the MongoDB connection

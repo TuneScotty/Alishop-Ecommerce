@@ -1,3 +1,9 @@
+/**
+ * Admin dashboard page providing centralized access to all administrative functions.
+ * Features navigation cards for product management, order management, user management,
+ * and system settings with AliExpress integration overview and quick action buttons.
+ */
+
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
 import Link from 'next/link';
@@ -6,6 +12,11 @@ import { isAdmin } from '../../utils/auth';
 import { serializeSession } from '../../utils/session';
 import { authOptions } from '../api/auth/[...nextauth]';
 
+/**
+ * AdminDashboard component renders the main admin interface with organized navigation sections.
+ * Displays product management, order management, user management, and settings sections with
+ * quick access links and AliExpress integration information for streamlined administration.
+ */
 export default function AdminDashboard() {
   const adminLinks = [
     {
@@ -38,6 +49,11 @@ export default function AdminDashboard() {
     },
   ];
 
+  /**
+   * Renders SVG icons for navigation links based on icon type.
+   * @param icon - The icon type string (box, plus, download, shopping-cart, globe, users, cog, settings)
+   * @returns JSX element containing the appropriate SVG icon or null if icon type not found
+   */
   const renderIcon = (icon: string) => {
     switch (icon) {
       case 'box':
@@ -195,6 +211,12 @@ export default function AdminDashboard() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication before rendering the dashboard.
+ * Checks user session and admin privileges, redirecting unauthorized users to login page.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Props object with serialized session data or redirect configuration for unauthorized access
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

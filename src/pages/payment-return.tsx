@@ -1,3 +1,4 @@
+// Payment return page for processing Tranzila payment callbacks
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
@@ -5,6 +6,12 @@ import Layout from '../components/Layout';
 import { useNotification } from '../context/NotificationContext';
 import { useCart } from '../context/CartContext';
 
+/**
+ * Payment return page for processing Tranzila payment callbacks
+ * @returns JSX.Element - Payment processing status page with success/error handling
+ * Purpose: Handles payment gateway return callbacks, processes order creation,
+ * and provides user feedback for payment success or failure scenarios
+ */
 export default function PaymentReturnPage() {
   const router = useRouter();
   const { showNotification } = useNotification();
@@ -14,6 +21,10 @@ export default function PaymentReturnPage() {
   const [message, setMessage] = useState('Processing your payment...');
 
   useEffect(() => {
+    /**
+     * Processes payment return from Tranzila gateway
+     * Purpose: Validates payment response, creates order, and handles success/error states
+     */
     const processPaymentReturn = async () => {
       try {
         // Get the pending order from session storage
@@ -69,6 +80,12 @@ export default function PaymentReturnPage() {
     }
   }, [router.isReady, router.query, clearCart, router]);
 
+  /**
+   * Maps Tranzila response codes to user-friendly error messages
+   * @param responseCode - Tranzila payment response code
+   * @returns User-friendly error message
+   * Purpose: Provides meaningful error messages for payment failures
+   */
   const getErrorMessage = (responseCode: string): string => {
     const errorCodes: Record<string, string> = {
       '001': 'Card company hasn\'t authorized the transaction',

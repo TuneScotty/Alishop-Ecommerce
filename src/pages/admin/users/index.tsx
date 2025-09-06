@@ -1,3 +1,9 @@
+/**
+ * Admin users management page displaying all registered users in a comprehensive table.
+ * Provides user account management, admin privilege control, and user information overview
+ * with the ability to promote or demote users to/from admin status for system administration.
+ */
+
 import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -15,6 +21,11 @@ interface User {
   createdAt: string;
 }
 
+/**
+ * AdminUsersPage component renders the user management interface for administrators.
+ * Displays all users in a table format with names, emails, admin status, join dates,
+ * and action buttons for managing admin privileges and user account control.
+ */
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,6 +35,10 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, []);
 
+  /**
+   * Fetches all users from the API and updates the users state.
+   * Handles loading states and error notifications for failed requests.
+   */
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
@@ -39,6 +54,11 @@ export default function AdminUsersPage() {
     }
   };
 
+  /**
+   * Formats ISO date string into readable date format for user join dates.
+   * @param dateString - ISO date string to format
+   * @returns Formatted date string in MMM DD, YYYY format
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -47,6 +67,11 @@ export default function AdminUsersPage() {
     });
   };
 
+  /**
+   * Toggles admin status for a specific user with optimistic UI updates.
+   * @param userId - The unique identifier of the user to update
+   * @param currentStatus - Current admin status of the user to toggle
+   */
   const toggleAdminStatus = async (userId: string, currentStatus: boolean) => {
     try {
       const response = await axios.put(`/api/users/${userId}`, {
@@ -170,6 +195,12 @@ export default function AdminUsersPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for users page access.
+ * Ensures only authenticated admin users can view and manage user accounts and privileges.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Empty props object for authenticated admins or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

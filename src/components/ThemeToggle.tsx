@@ -1,6 +1,13 @@
+// Theme toggle component with light, dark, and system mode selection buttons
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 
+/**
+ * Theme toggle component with light, dark, and system mode selection buttons
+ * @returns JSX.Element - Three toggle buttons for light, dark, and system theme modes
+ * Purpose: Provides user interface for switching between different theme modes with visual
+ * indicators for active selection and accessibility labels
+ */
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 

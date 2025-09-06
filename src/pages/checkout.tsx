@@ -1,3 +1,4 @@
+// Multi-step checkout page with shipping address and payment processing
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -48,7 +49,12 @@ declare global {
   }
 }
 
-// Tranzila integration component
+/**
+ * Tranzila hosted payment fields component with PCI compliance
+ * @param onSuccess - Callback for successful payment token creation
+ * @param onError - Callback for payment processing errors
+ * Purpose: Provides secure payment form integration with Tranzila payment gateway
+ */
 const TranzilaHostedFields: React.FC<TranzilaHostedFieldsProps> = ({ onSuccess, onError }) => {
   useEffect(() => {
     // Load Tranzila script
@@ -65,6 +71,10 @@ const TranzilaHostedFields: React.FC<TranzilaHostedFieldsProps> = ({ onSuccess, 
     };
   }, []);
 
+  /**
+   * Initializes Tranzila hosted fields with security configuration
+   * Purpose: Sets up secure payment form with Hebrew language and PCI compliance
+   */
   const initializeTranzila = () => {
     if (window.TranzilaHostedFields) {
       const tranzilaFields = window.TranzilaHostedFields.create({
@@ -180,6 +190,12 @@ const TranzilaHostedFields: React.FC<TranzilaHostedFieldsProps> = ({ onSuccess, 
   );
 };
 
+/**
+ * Multi-step checkout page with shipping address and payment processing
+ * @returns JSX.Element - Complete checkout flow with address selection and payment
+ * Purpose: Handles order creation with shipping address management, payment processing,
+ * and integration with Tranzila payment gateway for secure transactions
+ */
 export default function CheckoutPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -269,6 +285,10 @@ export default function CheckoutPage() {
     }
   }, [status, router]);
   
+  /**
+   * Fetches user profile data and saved addresses
+   * Purpose: Loads user information and shipping addresses for checkout form population
+   */
   const fetchUserData = async () => {
     try {
       const { data } = await axios.get('/api/users/profile');
@@ -304,6 +324,11 @@ export default function CheckoutPage() {
     }
   };
   
+  /**
+   * Handles shipping address form field changes
+   * @param e - Input change event
+   * Purpose: Updates shipping address state with form input values
+   */
   const handleShippingAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setShippingAddress(prev => ({
@@ -312,16 +337,29 @@ export default function CheckoutPage() {
     }));
   };
   
+  /**
+   * Handles selection of saved shipping address
+   * @param index - Index of selected address in saved addresses array
+   * Purpose: Sets selected address and disables new address form
+   */
   const handleAddressSelection = (index: number) => {
     setSelectedAddressIndex(index);
     setUseNewAddress(false);
   };
   
+  /**
+   * Enables new address form input
+   * Purpose: Switches to new address input mode and clears address selection
+   */
   const handleUseNewAddress = () => {
     setUseNewAddress(true);
     setSelectedAddressIndex(-1);
   };
   
+  /**
+   * Validates shipping address and proceeds to payment step
+   * Purpose: Validates address data, saves new addresses, and advances checkout flow
+   */
   const handleNextStep = async () => {
     if (step === 1) {
       // Validate shipping address
@@ -417,7 +455,10 @@ export default function CheckoutPage() {
     }
   };
   
-  // Function to clear cart
+  /**
+   * Clears cart data from localStorage and updates UI
+   * Purpose: Removes all cart items after successful order completion
+   */
   const clearCart = () => {
     setCartItems([]);
     localStorage.removeItem('cart');
@@ -425,6 +466,11 @@ export default function CheckoutPage() {
     window.dispatchEvent(new Event('cartUpdated'));
   };
   
+  /**
+   * Processes successful payment and creates order
+   * @param paymentDetails - Payment information and customer data
+   * Purpose: Creates order with payment details and handles redirect-based payments
+   */
   const handlePaymentSuccess = async (paymentDetails: {
     cardNumber?: string;
     expMonth?: string;
@@ -505,6 +551,11 @@ export default function CheckoutPage() {
     }
   };
   
+  /**
+   * Handles payment processing errors
+   * @param errorMessage - Error message from payment processor
+   * Purpose: Displays payment error notifications to user
+   */
   const handlePaymentError = (errorMessage: string) => {
     showNotification(errorMessage, 'error');
   };

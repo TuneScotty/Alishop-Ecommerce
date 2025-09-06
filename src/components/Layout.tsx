@@ -1,3 +1,4 @@
+// Main application layout component with responsive navigation, cart management, and theme support
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -11,6 +12,15 @@ interface LayoutProps {
   description?: string;
 }
 
+/**
+ * Main application layout component with responsive navigation, cart management, and theme support
+ * @param children - React child components to render in the main content area
+ * @param title - Page title for SEO and browser tab (default: 'AliShop')
+ * @param description - Meta description for SEO (default: 'Premium shopping experience')
+ * @returns JSX.Element - Complete page layout with header, navigation, main content, and footer
+ * Purpose: Provides consistent layout structure with responsive navigation, cart functionality,
+ * user authentication status, admin access, and mobile-friendly design
+ */
 export default function Layout({ children, title = 'AliShop', description = 'Premium shopping experience' }: LayoutProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -75,7 +85,10 @@ export default function Layout({ children, title = 'AliShop', description = 'Pre
     navItems.push({ name: 'Admin', href: '/admin' });
   }
   
-  // Function to handle logout and clear cart
+  /**
+   * Handles user logout process and clears cart data
+   * Purpose: Signs out user, clears localStorage cart data, and dispatches cart update event
+   */
   const handleLogout = () => {
     // Clear cart from localStorage
     localStorage.removeItem('cart');

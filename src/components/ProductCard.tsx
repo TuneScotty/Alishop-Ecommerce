@@ -1,3 +1,4 @@
+// Product card component with image carousel, cart integration, and discount display
 import Link from 'next/link';
 import { useState } from 'react';
 import { IProduct } from '../models/Product';
@@ -11,6 +12,14 @@ interface ProductCardProps {
   onAddToCart?: (product: IProduct) => void;
 }
 
+/**
+ * Product card component with image carousel, cart integration, and discount display
+ * @param product - Product object containing all product details and metadata
+ * @param onAddToCart - Optional callback function triggered when product is added to cart
+ * @returns JSX.Element - Interactive product card with hover effects, image rotation, and cart functionality
+ * Purpose: Displays product information in a card format with add-to-cart functionality,
+ * image carousel, discount badges, stock status, and responsive design
+ */
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const { addToCart } = useCart();
   const { showNotification } = useNotification();
@@ -18,7 +27,10 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   const [isHovered, setIsHovered] = useState(false);
   const [showCartPopup, setShowCartPopup] = useState(false);
   
-  // Function to handle image rotation
+  /**
+   * Rotates through product images in carousel fashion
+   * Purpose: Cycles through available product images to show different views
+   */
   const rotateImage = () => {
     if (product.images && product.images.length > 1) {
       setCurrentImageIndex((prevIndex) => 
@@ -35,6 +47,10 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
   // Indicator if product has video
   const hasVideo = product.aliExpressData?.videos && product.aliExpressData.videos.length > 0;
   
+  /**
+   * Handles adding product to cart with popup notification
+   * Purpose: Adds product to cart context, shows confirmation popup, and triggers optional callback
+   */
   const handleAddToCart = () => {
     addToCart({
       _id: product._id,

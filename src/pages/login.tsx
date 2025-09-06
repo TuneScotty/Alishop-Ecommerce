@@ -1,3 +1,4 @@
+// User login page with NextAuth integration and custom authentication fallback
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -5,6 +6,12 @@ import { signIn, useSession } from 'next-auth/react';
 import Layout from '../components/Layout';
 import Image from 'next/image';
 
+/**
+ * User login page with NextAuth integration and custom authentication fallback
+ * @returns JSX.Element - Login form with email/password fields and authentication handling
+ * Purpose: Provides secure user authentication with NextAuth credentials provider and custom
+ * fallback endpoint, includes session management, redirect handling, and responsive design
+ */
 export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
@@ -22,6 +29,11 @@ export default function LoginPage() {
     }
   }, [session, router]);
 
+  /**
+   * Handles form submission with dual authentication strategy
+   * @param e - Form submission event
+   * Purpose: Attempts NextAuth credentials login first, falls back to custom endpoint if needed
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');

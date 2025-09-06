@@ -1,3 +1,9 @@
+/**
+ * Admin orders management page displaying all customer orders in a comprehensive table.
+ * Provides order tracking, status management, payment verification, and AliExpress integration
+ * with filtering, sorting, and detailed order information for efficient order administration.
+ */
+
 import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -31,6 +37,11 @@ interface Order {
   createdAt: string;
 }
 
+/**
+ * AdminOrdersPage component renders a comprehensive orders management interface.
+ * Displays all orders in a table format with customer details, payment status, order status,
+ * and action buttons for viewing details and processing AliExpress orders.
+ */
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,6 +51,10 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, []);
 
+  /**
+   * Fetches all orders from the API and updates the orders state.
+   * Handles loading states and error notifications for failed requests.
+   */
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
@@ -55,6 +70,11 @@ export default function AdminOrdersPage() {
     }
   };
 
+  /**
+   * Formats ISO date string into readable date and time format.
+   * @param dateString - ISO date string to format
+   * @returns Formatted date string in MM/DD/YYYY HH:MM format
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -65,6 +85,11 @@ export default function AdminOrdersPage() {
     });
   };
 
+  /**
+   * Returns appropriate CSS classes for order status badges based on status value.
+   * @param status - Order status string (pending, processing, shipped, delivered, cancelled)
+   * @returns CSS class string for styling the status badge with appropriate colors
+   */
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'pending':
@@ -202,6 +227,12 @@ export default function AdminOrdersPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for orders page access.
+ * Ensures only authenticated admin users can view and manage customer orders.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Empty props object for authenticated admins or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

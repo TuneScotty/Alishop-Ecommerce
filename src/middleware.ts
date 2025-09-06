@@ -1,6 +1,12 @@
+// Next.js middleware for handling CORS headers and API route configuration
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Sets CORS headers for all API routes
+/**
+ * Configures CORS headers for all API routes and handles preflight requests
+ * @param request - NextRequest object containing the incoming HTTP request
+ * @returns NextResponse with CORS headers set, or immediate response for OPTIONS requests
+ * Purpose: Enables cross-origin requests by setting appropriate CORS headers and handling preflight OPTIONS requests
+ */
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
@@ -12,7 +18,6 @@ export function middleware(request: NextRequest) {
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
 
-  // Respond immediately to OPTIONS pre-flight requests
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 200, headers: response.headers });
   }
@@ -20,7 +25,6 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Apply only to API routes
 export const config = {
   matcher: '/api/:path*',
 };

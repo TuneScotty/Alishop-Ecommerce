@@ -1,3 +1,9 @@
+/**
+ * Admin AliExpress orders management page displaying all AliExpress-integrated orders.
+ * Provides order tracking, status synchronization, filtering by status, pagination,
+ * and direct integration with AliExpress API for real-time order status updates.
+ */
+
 import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -8,6 +14,11 @@ import { isAdmin } from '../../utils/auth';
 import { authOptions } from '../api/auth/[...nextauth]';
 import { serializeSession } from '../../utils/session';
 
+/**
+ * AliExpressOrdersPage component renders AliExpress order management interface.
+ * Displays orders with AliExpress integration, status filtering, pagination controls,
+ * and real-time status refresh functionality for comprehensive order tracking.
+ */
 export default function AliExpressOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,6 +46,10 @@ export default function AliExpressOrdersPage() {
     loadOrders();
   }, [status, page, showNotification]);
 
+  /**
+   * Refreshes order status from AliExpress API and updates local order data.
+   * @param orderId - The unique identifier of the order to refresh status for
+   */
   const handleRefreshStatus = async (orderId: string) => {
     try {
       const response = await axios.get(`/api/aliexpress/order?orderId=${orderId}`);
@@ -52,6 +67,11 @@ export default function AliExpressOrdersPage() {
     }
   };
 
+  /**
+   * Formats ISO date string into readable date and time format for order display.
+   * @param dateString - ISO date string to format
+   * @returns Formatted date and time string in local format
+   */
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
@@ -225,6 +245,12 @@ export default function AliExpressOrdersPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for AliExpress orders access.
+ * Ensures only authenticated admin users can view and manage AliExpress order integration.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Props object with serialized session data or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

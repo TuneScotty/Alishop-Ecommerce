@@ -1,3 +1,4 @@
+// Cart popup modal with order summary, tax calculations, and checkout navigation
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useCart } from '../context/CartContext';
@@ -9,6 +10,14 @@ interface CartPopupProps {
   isOpen: boolean;
 }
 
+/**
+ * Cart popup modal with order summary, tax calculations, and checkout navigation
+ * @param onClose - Callback function to close the popup modal
+ * @param isOpen - Boolean flag controlling popup visibility
+ * @returns JSX.Element - Modal popup displaying cart contents with pricing and navigation
+ * Purpose: Provides quick cart overview with itemized list, pricing calculations, and
+ * navigation to cart editing and checkout pages using React portal for proper z-index
+ */
 export default function CartPopup({ onClose, isOpen }: CartPopupProps) {
   const { cartItems } = useCart();
   const [mounted, setMounted] = useState(false);
@@ -25,14 +34,26 @@ export default function CartPopup({ onClose, isOpen }: CartPopupProps) {
     };
   }, [isOpen]);
 
+  /**
+   * Calculates cart subtotal before tax and shipping
+   * Purpose: Computes total price of all cart items multiplied by quantities
+   */
   const calculateSubtotal = () => {
     return cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   };
 
+  /**
+   * Calculates tax amount based on subtotal
+   * Purpose: Applies 10% tax rate to subtotal for order calculations
+   */
   const calculateTax = () => {
     return calculateSubtotal() * 0.1;
   };
 
+  /**
+   * Calculates final order total including tax
+   * Purpose: Combines subtotal and tax for final order amount
+   */
   const calculateTotal = () => {
     return calculateSubtotal() + calculateTax();
   };

@@ -1,8 +1,9 @@
+// Product management controller with CRUD operations, search, and review functionality
 import { NextApiRequest, NextApiResponse } from 'next';
 import Product, { IProduct } from '../models/Product';
 import connectDB from '../config/database';
 
-// Get all products
+// Retrieves paginated products with optional keyword search and filtering
 export const getProducts = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -35,7 +36,7 @@ export const getProducts = async (req: NextApiRequest, res: NextApiResponse) => 
   }
 };
 
-// Get a single product by ID
+// Fetches single product by ID with validation for invalid or undefined IDs
 export const getProductById = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -57,7 +58,7 @@ export const getProductById = async (req: NextApiRequest, res: NextApiResponse) 
   }
 };
 
-// Create a new product
+// Creates new product with automatic slug generation and default image handling
 export const createProduct = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -111,7 +112,7 @@ export const createProduct = async (req: NextApiRequest, res: NextApiResponse) =
   }
 };
 
-// Update a product
+// Updates existing product with field validation and slug regeneration
 export const updateProduct = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -170,7 +171,7 @@ export const updateProduct = async (req: NextApiRequest, res: NextApiResponse) =
   }
 };
 
-// Delete a product
+// Removes product from database by ID with existence validation
 export const deleteProduct = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -188,7 +189,7 @@ export const deleteProduct = async (req: NextApiRequest, res: NextApiResponse) =
   }
 };
 
-// Create a product review
+// Adds user review to product and recalculates rating with duplicate prevention
 export const createProductReview = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();

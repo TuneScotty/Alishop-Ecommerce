@@ -1,3 +1,4 @@
+// Theme management context provider with dark/light/system modes and CSS variable management
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type ThemeType = 'light' | 'dark' | 'system';
@@ -10,6 +11,12 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+/**
+ * Theme context provider that manages application theme with localStorage persistence
+ * @param children - React child components that will have access to theme context
+ * Purpose: Provides theme switching functionality with dark/light/system modes, CSS variable management,
+ * localStorage persistence, and automatic system theme detection and updates
+ */
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<ThemeType>('system');
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -136,6 +143,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [theme]);
 
+  /**
+   * Updates theme preference and applies changes to DOM and localStorage
+   * @param newTheme - Theme type to set (light, dark, or system)
+   * Purpose: Changes application theme with persistence and immediate DOM updates
+   */
   const setTheme = (newTheme: ThemeType) => {
     try {
       setThemeState(newTheme);
@@ -152,6 +164,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
+/**
+ * Custom hook to access theme context functionality
+ * @returns ThemeContextType - Theme state and setter function with dark mode status
+ * @throws Error if used outside ThemeProvider
+ * Purpose: Provides access to theme management throughout the application
+ */
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (context === undefined) {

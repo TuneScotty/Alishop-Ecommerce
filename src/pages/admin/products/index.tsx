@@ -1,3 +1,9 @@
+/**
+ * Admin products management page displaying all products in a comprehensive table interface.
+ * Provides product listing, editing, deletion, and creation functionality with AliExpress import
+ * integration for efficient product catalog management and inventory control.
+ */
+
 import { useState, useEffect } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -11,6 +17,11 @@ import { IProduct } from '../../../models/Product';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
+/**
+ * AdminProductsPage component renders the product management interface for administrators.
+ * Displays products in a table with images, names, prices, stock levels, and action buttons
+ * for editing, deleting, and managing the product catalog with AliExpress integration.
+ */
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +38,10 @@ export default function AdminProductsPage() {
     }
   }, [status, session]);
 
+  /**
+   * Fetches all products from the API and updates the products state.
+   * Handles loading states, error notifications, and ensures products array is always valid.
+   */
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
@@ -43,6 +58,10 @@ export default function AdminProductsPage() {
     }
   };
 
+  /**
+   * Handles product deletion with confirmation dialog and optimistic UI updates.
+   * @param productId - The unique identifier of the product to delete
+   */
   const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       setIsDeleting(productId);
@@ -194,6 +213,12 @@ export default function AdminProductsPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for products page access.
+ * Ensures only authenticated admin users can view and manage the product catalog.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Props object with serialized session data or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

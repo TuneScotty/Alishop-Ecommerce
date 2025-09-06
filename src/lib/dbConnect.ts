@@ -1,3 +1,4 @@
+// MongoDB connection utility with caching, detailed logging, and error handling
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -8,11 +9,6 @@ if (!MONGODB_URI) {
   );
 }
 
-/**
- * Global is used here to maintain a cached connection across hot reloads
- * in development. This prevents connections growing exponentially
- * during API Route usage.
- */
 interface ConnectionCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
@@ -24,6 +20,12 @@ if (!cached) {
   cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
+/**
+ * Connects to MongoDB with detailed logging and connection reuse for development hot reloads
+ * @returns Promise<typeof mongoose> - Returns mongoose instance with established connection
+ * Purpose: Manages MongoDB connection with comprehensive error logging, connection caching to prevent
+ * exponential connection growth during development, and detailed connection status reporting
+ */
 async function dbConnect() {
   console.log('Creating new MongoDB connection...');
   console.log('MongoDB URI:', MONGODB_URI?.replace(/:[^:]*@/, ':***@'));

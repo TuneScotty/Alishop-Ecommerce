@@ -1,3 +1,4 @@
+// User registration page with account creation and automatic login
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -5,6 +6,12 @@ import axios from 'axios';
 import { signIn } from 'next-auth/react';
 import Layout from '../components/Layout';
 
+/**
+ * User registration page with account creation and automatic login
+ * @returns JSX.Element - Registration form with validation and NextAuth integration
+ * Purpose: Handles new user account creation with password confirmation, automatic login
+ * after registration, and redirect to intended destination with responsive design
+ */
 export default function RegisterPage() {
   const router = useRouter();
   const [name, setName] = useState('');
@@ -15,6 +22,11 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [registered, setRegistered] = useState(false);
 
+  /**
+   * Handles registration form submission with validation and auto-login
+   * @param e - Form submission event
+   * Purpose: Creates new user account, validates passwords match, and automatically logs in user
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');

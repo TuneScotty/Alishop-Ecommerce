@@ -1,3 +1,4 @@
+// AliExpress Open Platform API service for official API integration and dropshipping operations
 import axios from 'axios';
 import crypto from 'crypto';
 import { IOrder } from '../models/Order';
@@ -39,6 +40,11 @@ export interface AliExpressProductDetails {
   stock: number;
 }
 
+/**
+ * AliExpress Open Platform API service for official API integration and dropshipping operations
+ * Purpose: Provides official AliExpress API integration for authorized product access,
+ * order management, and tracking through the AliExpress Open Platform
+ */
 export interface AliExpressOrderResult {
   success: boolean;
   order_id?: string;

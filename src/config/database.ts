@@ -1,3 +1,4 @@
+// MongoDB database connection configuration with caching and SSL support
 import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -17,6 +18,12 @@ if (!cached) {
   cached = (global as any).mongoose = { conn: null, promise: null };
 }
 
+/**
+ * Establishes MongoDB connection with SSL/TLS and connection pooling optimizations
+ * @returns Promise<typeof mongoose> - Returns mongoose instance with active connection
+ * Purpose: Creates cached MongoDB connection with production-ready SSL settings, connection pooling,
+ * and retry logic to handle network issues and optimize performance
+ */
 async function connectDB() {
   if (cached.conn) {
     return cached.conn;

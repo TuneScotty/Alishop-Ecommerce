@@ -1,7 +1,10 @@
+// Environment variable validation utility with production safety checks
+
 /**
- * Validates required environment variables
- * In production, this will exit the process if required variables are missing
- * In development, it will log warnings but allow the application to continue
+ * Validates required environment variables with production safety enforcement
+ * @returns Boolean indicating successful validation
+ * Purpose: Ensures all required environment variables are present and valid before
+ * application startup, with strict enforcement in production and graceful handling in development
  */
 export function validateEnv() {
   // Required environment variables

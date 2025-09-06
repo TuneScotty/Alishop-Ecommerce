@@ -1,3 +1,4 @@
+// Next.js application root with context providers, font loading, and PWA service worker registration
 import '../styles/globals.css';
 import type { AppProps } from 'next/app';
 import { SessionProvider } from 'next-auth/react';
@@ -74,7 +75,12 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-// Simple component that just renders the page with fonts
+/**
+ * Simple component wrapper that renders pages with font variables applied
+ * @param Component - Next.js page component to render
+ * @param pageProps - Props passed to the page component
+ * Purpose: Provides basic page rendering with font loading and meta tags
+ */
 function AppContent({ Component, pageProps }: { Component: any; pageProps: any }) {
   return (
     <>
@@ -90,6 +96,14 @@ function AppContent({ Component, pageProps }: { Component: any; pageProps: any }
   );
 }
 
+/**
+ * Next.js application root with context providers, font loading, and PWA service worker registration
+ * @param Component - Next.js page component to render
+ * @param pageProps - Props including session data for the page
+ * @returns JSX.Element - Complete application with all providers and PWA functionality
+ * Purpose: Provides application-wide context providers, font loading, service worker registration,
+ * admin route protection, and cart consistency validation for the entire ecommerce application
+ */
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const [isStandalone, setIsStandalone] = useState(false);
 

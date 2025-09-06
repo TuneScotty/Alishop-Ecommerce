@@ -1,5 +1,10 @@
+// Cart consistency utility component that validates and cleans localStorage cart data
 import { useEffect } from 'react';
 
+/**
+ * Validates and cleans cart data in localStorage to prevent corruption
+ * Purpose: Removes invalid cart items and ensures data integrity on app initialization
+ */
 function ensureCartConsistency() {
   try {
     // Get existing cart from localStorage
@@ -38,6 +43,13 @@ function ensureCartConsistency() {
   }
 }
 
+/**
+ * Cart consistency utility component that validates and cleans localStorage cart data
+ * @param children - React components to render after cart validation
+ * @returns JSX.Element - Renders children after ensuring cart data integrity
+ * Purpose: Wrapper component that validates cart data on mount to prevent issues
+ * with corrupted or invalid cart items in localStorage
+ */
 export default function CartConsistency({ children }: { children: React.ReactNode }) {
   // Ensure cart consistency on initial load
   useEffect(() => {

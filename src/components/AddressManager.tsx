@@ -1,3 +1,4 @@
+// Address management component with CRUD operations for user shipping addresses
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNotification } from '../context/NotificationContext';
@@ -39,6 +40,12 @@ const initialAddressState: AddressFormData = {
   isDefault: false
 };
 
+/**
+ * Address management component with CRUD operations for user shipping addresses
+ * @returns JSX.Element - Complete address management interface with form and list views
+ * Purpose: Provides full address lifecycle management including add, edit, delete, and
+ * default address selection with form validation and API integration
+ */
 export default function AddressManager() {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
@@ -52,6 +59,10 @@ export default function AddressManager() {
     fetchAddresses();
   }, []);
 
+  /**
+   * Fetches user addresses from API and updates component state
+   * Purpose: Retrieves all saved addresses for the current user with error handling
+   */
   const fetchAddresses = async () => {
     try {
       setLoading(true);
@@ -66,6 +77,11 @@ export default function AddressManager() {
     }
   };
 
+  /**
+   * Handles form input changes for address form fields
+   * @param e - React change event from form inputs
+   * Purpose: Updates form state with proper handling for checkboxes and text inputs
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
     
@@ -77,12 +93,21 @@ export default function AddressManager() {
     }
   };
 
+  /**
+   * Initializes form for adding new address
+   * Purpose: Resets form state and shows address form in add mode
+   */
   const handleAddAddress = () => {
     setEditingAddress(null);
     setFormData(initialAddressState);
     setShowForm(true);
   };
 
+  /**
+   * Initializes form for editing existing address
+   * @param address - Address object to edit
+   * Purpose: Populates form with existing address data for editing
+   */
   const handleEditAddress = (address: Address) => {
     setEditingAddress(address._id);
     setFormData({
@@ -99,6 +124,11 @@ export default function AddressManager() {
     setShowForm(true);
   };
 
+  /**
+   * Deletes address after user confirmation
+   * @param id - Address ID to delete
+   * Purpose: Removes address from user's saved addresses with confirmation dialog
+   */
   const handleDeleteAddress = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this address?')) {
       try {
@@ -112,6 +142,11 @@ export default function AddressManager() {
     }
   };
 
+  /**
+   * Sets address as user's default shipping address
+   * @param id - Address ID to set as default
+   * Purpose: Updates address default status and refreshes address list
+   */
   const handleSetDefault = async (id: string) => {
     try {
       await axios.put('/api/users/addresses', {
@@ -126,6 +161,11 @@ export default function AddressManager() {
     }
   };
 
+  /**
+   * Handles form submission for add/edit address operations
+   * @param e - React form submission event
+   * Purpose: Validates form data and submits to API for create or update operations
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     

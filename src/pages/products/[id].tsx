@@ -1,3 +1,4 @@
+// Product detail page with media carousel and cart integration
 import { GetServerSideProps } from 'next';
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
@@ -15,6 +16,13 @@ interface ProductDetailProps {
   product: IProduct | null;
 }
 
+/**
+ * Product detail page with media carousel and cart integration
+ * @param product - Product object with details and media
+ * @returns JSX.Element - Detailed product view with image/video carousel and purchase options
+ * Purpose: Displays comprehensive product information including media gallery, pricing,
+ * availability, and cart functionality with AliExpress integration details
+ */
 export default function ProductDetail({ product }: ProductDetailProps) {
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
@@ -47,13 +55,21 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     ...(product.aliExpressData?.videos || [])
   ];
   
-  // Check if current slide is a video
+  /**
+   * Checks if current media item is a video
+   * @param index - Media item index to check
+   * @returns Boolean indicating if item is video
+   * Purpose: Determines media type for proper rendering in carousel
+   */
   const isCurrentItemVideo = (index: number) => {
     return product.aliExpressData?.videos && 
            product.aliExpressData.videos.includes(mediaItems[index]);
   };
   
-  // Handle video play/pause
+  /**
+   * Toggles video playback state
+   * Purpose: Controls video play/pause functionality in media carousel
+   */
   const toggleVideo = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -65,7 +81,11 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     }
   };
   
-  // Handle slide navigation
+  /**
+   * Navigates to specific slide in media carousel
+   * @param index - Target slide index
+   * Purpose: Handles slide navigation with video pause on slide change
+   */
   const goToSlide = (index: number) => {
     // If leaving a video slide, pause the video
     if (isCurrentItemVideo(currentSlide) && videoRef.current) {
@@ -75,26 +95,46 @@ export default function ProductDetail({ product }: ProductDetailProps) {
     setCurrentSlide(index);
   };
   
+  /**
+   * Advances to next slide in carousel
+   * Purpose: Provides forward navigation through media items
+   */
   const nextSlide = () => {
     goToSlide((currentSlide + 1) % mediaItems.length);
   };
   
+  /**
+   * Goes to previous slide in carousel
+   * Purpose: Provides backward navigation through media items
+   */
   const prevSlide = () => {
     goToSlide((currentSlide - 1 + mediaItems.length) % mediaItems.length);
   };
 
+  /**
+   * Increases product quantity with stock validation
+   * Purpose: Manages quantity increment with stock limit checking
+   */
   const increaseQuantity = () => {
     if (quantity < product.countInStock) {
       setQuantity(quantity + 1);
     }
   };
 
+  /**
+   * Decreases product quantity with minimum validation
+   * Purpose: Manages quantity decrement with minimum limit checking
+   */
   const decreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(quantity - 1);
     }
   };
 
+  /**
+   * Handles adding product to cart with localStorage persistence
+   * Purpose: Manages cart operations with quantity updates and user notifications
+   */
   const addToCartHandler = () => {
     try {
       if (!product || !product._id) {
@@ -369,6 +409,12 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   );
 }
 
+/**
+ * Server-side data fetching for product details
+ * @param params - Route parameters containing product ID or slug
+ * @returns Props containing product data or null if not found
+ * Purpose: Fetches product details by ID or slug with fallback handling
+ */
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   try {
     if (!params?.id) {

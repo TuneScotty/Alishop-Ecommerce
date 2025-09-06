@@ -1,3 +1,4 @@
+// Notification system context provider with toast notifications and auto-dismiss functionality
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type NotificationType = 'success' | 'error' | 'info' | 'warning';
@@ -17,6 +18,12 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
+/**
+ * Custom hook to access notification context functionality
+ * @returns NotificationContextType - Notification state and methods for showing/hiding notifications
+ * @throws Error if used outside NotificationProvider
+ * Purpose: Provides access to notification system throughout the application
+ */
 export const useNotification = () => {
   const context = useContext(NotificationContext);
   if (!context) {
@@ -25,9 +32,23 @@ export const useNotification = () => {
   return context;
 };
 
+/**
+ * Notification context provider that manages toast notifications with auto-dismiss
+ * @param children - React child components that will have access to notification context
+ * Purpose: Provides notification system with success, error, warning, and info messages,
+ * automatic dismissal, and animated toast UI components
+ */
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  /**
+   * Displays a new notification with specified type and auto-dismiss duration
+   * @param message - Text content to display in the notification
+   * @param type - Notification type (success, error, info, warning)
+   * @param duration - Auto-dismiss time in milliseconds (default 5000, Infinity for persistent)
+   * @returns string - Unique notification ID for manual dismissal
+   * Purpose: Creates and displays toast notification with automatic cleanup
+   */
   const showNotification = (message: string, type: NotificationType = 'info', duration = 5000) => {
     const id = Math.random().toString(36).substring(2, 9);
     const newNotification = { id, message, type, duration };
@@ -43,6 +64,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return id;
   };
 
+  /**
+   * Hides notification by ID with exit animation before removal
+   * @param id - Unique notification ID to remove
+   * Purpose: Removes notification with smooth exit animation and cleanup
+   */
   const hideNotification = (id: string) => {
     setNotifications(prev => {
       const notification = prev.find(n => n.id === id);
@@ -71,6 +97,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   );
 };
 
+/**
+ * Notification container component that renders all active notifications
+ * Purpose: Displays toast notifications in fixed position with icons, styling, and close buttons
+ */
 const NotificationContainer: React.FC = () => {
   const { notifications, hideNotification } = useNotification();
 

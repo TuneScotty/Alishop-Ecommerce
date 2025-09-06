@@ -1,3 +1,4 @@
+// Products listing page with search functionality and pagination
 import { GetServerSideProps } from 'next';
 import { useState } from 'react';
 import Head from 'next/head';
@@ -15,6 +16,15 @@ interface ProductsPageProps {
   page: number;
 }
 
+/**
+ * Products listing page with search functionality and pagination
+ * @param products - Array of products to display
+ * @param pages - Total number of pages for pagination
+ * @param page - Current page number
+ * @returns JSX.Element - Products grid with search and pagination
+ * Purpose: Displays product catalog with search capabilities, pagination navigation,
+ * and cart integration for browsing and purchasing products
+ */
 export default function ProductsPage({ products = [], pages = 1, page = 1 }: ProductsPageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const { showNotification } = useNotification();
@@ -22,11 +32,21 @@ export default function ProductsPage({ products = [], pages = 1, page = 1 }: Pro
   // Ensure products is always an array
   const safeProducts = Array.isArray(products) ? products : [];
 
+  /**
+   * Handles product search form submission
+   * @param e - Form submission event
+   * Purpose: Processes search queries for product filtering
+   */
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     console.log(`Searching for: ${searchTerm}`);
   };
 
+  /**
+   * Adds product to cart with sessionStorage persistence
+   * @param product - Product object to add to cart
+   * Purpose: Manages cart operations with quantity updates and user notifications
+   */
   const addToCart = (product: IProduct) => {
     try {
       if (!product || !product._id) {
@@ -147,6 +167,12 @@ export default function ProductsPage({ products = [], pages = 1, page = 1 }: Pro
   );
 }
 
+/**
+ * Server-side data fetching for products with search and pagination
+ * @param query - URL query parameters including page and keyword
+ * @returns Props containing products array and pagination data
+ * Purpose: Fetches products from database with search filtering and pagination support
+ */
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   try {
     const page = Number(query.page) || 1;

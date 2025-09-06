@@ -1,3 +1,9 @@
+/**
+ * Admin add product page providing a comprehensive form for creating new products.
+ * Features product information input, image URL management, AliExpress integration fields,
+ * pricing and inventory controls with validation and error handling for product creation.
+ */
+
 import { useState } from 'react';
 import { GetServerSideProps } from 'next';
 import { getServerSession } from 'next-auth';
@@ -8,6 +14,11 @@ import { useNotification } from '../../../context/NotificationContext';
 import { isAdmin } from '../../../utils/auth';
 import { authOptions } from '../../api/auth/[...nextauth]';
 
+/**
+ * AddProductPage component renders a comprehensive product creation form for administrators.
+ * Includes fields for product details, pricing, inventory, images, and AliExpress integration
+ * with dynamic image URL management and form validation for successful product creation.
+ */
 export default function AddProductPage() {
   const router = useRouter();
   const { showNotification } = useNotification();
@@ -22,6 +33,10 @@ export default function AddProductPage() {
     countInStock: '100',
   });
 
+  /**
+   * Handles form input changes for basic product information fields.
+   * @param e - React change event from input or textarea elements
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({
@@ -30,6 +45,11 @@ export default function AddProductPage() {
     });
   };
 
+  /**
+   * Updates a specific image URL in the images array at the given index.
+   * @param index - Array index of the image URL to update
+   * @param value - New image URL value
+   */
   const handleImageChange = (index: number, value: string) => {
     const newImages = [...formData.images];
     newImages[index] = value;
@@ -39,6 +59,9 @@ export default function AddProductPage() {
     });
   };
 
+  /**
+   * Adds a new empty image URL field to the images array for additional product images.
+   */
   const addImageField = () => {
     setFormData({
       ...formData,
@@ -46,6 +69,10 @@ export default function AddProductPage() {
     });
   };
 
+  /**
+   * Removes an image URL field from the images array at the specified index.
+   * @param index - Array index of the image URL field to remove
+   */
   const removeImageField = (index: number) => {
     const newImages = formData.images.filter((_, i) => i !== index);
     setFormData({
@@ -54,6 +81,10 @@ export default function AddProductPage() {
     });
   };
 
+  /**
+   * Handles form submission for creating a new product with validation and API call.
+   * @param e - React form submission event
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -271,6 +302,12 @@ export default function AddProductPage() {
   );
 }
 
+/**
+ * Server-side props function that validates admin authentication for add product page access.
+ * Ensures only authenticated admin users can access the product creation form.
+ * @param context - Next.js server-side context containing request and response objects
+ * @returns Empty props object for authenticated admins or redirect for unauthorized users
+ */
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   

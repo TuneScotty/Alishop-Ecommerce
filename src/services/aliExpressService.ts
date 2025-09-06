@@ -1,3 +1,4 @@
+// AliExpress integration service for product scraping, order management, and dropshipping automation
 import axios from 'axios';
 import { IOrder } from '../models/Order';
 import { IProduct } from '../models/Product';
@@ -23,6 +24,11 @@ export interface AliExpressProductData {
   ratings: any;
 }
 
+/**
+ * AliExpress integration service for product scraping, order management, and dropshipping automation
+ * Purpose: Provides comprehensive AliExpress integration including product data extraction,
+ * automated order placement, price markup calculation, and inventory synchronization
+ */
 export class AliExpressService {
   private baseUrl: string;
   private apiUrl: string = 'https://api.aliexpress.com';

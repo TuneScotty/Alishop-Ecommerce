@@ -1,3 +1,4 @@
+// API authentication middleware with role-based access control and CORS handling
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../pages/api/auth/[...nextauth]';
@@ -12,6 +13,14 @@ interface AuthOptions {
   applyCors?: boolean;
 }
 
+/**
+ * Higher-order function that wraps API handlers with authentication and authorization
+ * @param handler - API route handler function to be protected
+ * @param options - Configuration options for authentication requirements
+ * @returns Protected API handler with authentication, authorization, and CORS support
+ * Purpose: Provides centralized authentication middleware for API routes with configurable
+ * authentication requirements, admin role checking, and CORS handling
+ */
 export function withAuth(handler: ApiHandler, options: AuthOptions = {}) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     const { requireAuth = true, requireAdmin = false, applyCors = true } = options;

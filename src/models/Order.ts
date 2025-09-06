@@ -1,3 +1,4 @@
+// Order model with payment tracking, shipping details, and AliExpress integration
 import mongoose from 'mongoose';
 
 export interface IOrder extends mongoose.Document {
@@ -161,7 +162,6 @@ const orderSchema = new mongoose.Schema<IOrder>(
   }
 );
 
-// Check if the model exists before creating it
 const Order = mongoose.models.Order || mongoose.model<IOrder>('Order', orderSchema);
 
 export default Order as mongoose.Model<IOrder>; 

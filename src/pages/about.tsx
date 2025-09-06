@@ -1,7 +1,13 @@
+// About page showcasing brand story, company values, and technology stack
 import Image from 'next/image';
 import Layout from '../components/Layout';
 
-// About page showcases brand story, values and tech stack
+/**
+ * About page showcasing brand story, company values, and technology stack
+ * @returns JSX.Element - Complete about page with hero, mission, tech stack, and CTA sections
+ * Purpose: Provides company information, mission statement, technology details, and brand story
+ * to build trust and showcase the platform's capabilities to potential customers
+ */
 export default function AboutPage() {
   return (
     <Layout title="About Us – AliShop" description="Learn about our mission, team and technology">

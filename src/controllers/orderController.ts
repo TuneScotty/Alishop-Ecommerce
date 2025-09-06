@@ -1,3 +1,4 @@
+// Order management controller with payment processing and AliExpress integration
 import { NextApiRequest, NextApiResponse } from 'next';
 import Order, { IOrder } from '../models/Order';
 import Product from '../models/Product';
@@ -6,7 +7,13 @@ import tranzilaService from '../services/tranzilaService';
 import aliExpressOpenPlatformService from '../services/aliExpressOpenPlatformService';
 import mongoose from 'mongoose';
 
-// Create a new order
+/**
+ * Creates new order with Tranzila payment processing and automatic AliExpress order placement
+ * @param req - NextApiRequest containing order data (orderItems, shippingAddress, paymentMethod, prices, paymentDetails)
+ * @param res - NextApiResponse for sending created order data or error
+ * Purpose: Processes complete order workflow including payment validation with Tranzila gateway,
+ * order creation in database, and automatic AliExpress order placement for dropshipping items
+ */
 export const createOrder = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -124,7 +131,13 @@ export const createOrder = async (req: NextApiRequest, res: NextApiResponse) => 
   }
 };
 
-// Get order by ID
+/**
+ * Retrieves order by ID with populated user information using MongoDB collections
+ * @param req - NextApiRequest containing order ID in query parameters
+ * @param res - NextApiResponse for sending order data with user info or error
+ * Purpose: Fetches detailed order information including associated user data for order tracking
+ * and management, using direct MongoDB collection queries for optimized performance
+ */
 export const getOrderById = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -159,7 +172,13 @@ export const getOrderById = async (req: NextApiRequest, res: NextApiResponse) =>
   }
 };
 
-// Get logged in user orders
+/**
+ * Fetches all orders for authenticated user using direct MongoDB collection queries
+ * @param req - NextApiRequest containing user ID in request body
+ * @param res - NextApiResponse for sending array of user's orders or error
+ * Purpose: Provides authenticated user with their complete order history for account management
+ * and order tracking functionality
+ */
 export const getMyOrders = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -176,7 +195,13 @@ export const getMyOrders = async (req: NextApiRequest, res: NextApiResponse) => 
   }
 };
 
-// Get all orders (admin)
+/**
+ * Retrieves all orders with user information for admin dashboard management
+ * @param req - NextApiRequest (admin authentication required)
+ * @param res - NextApiResponse for sending array of all orders with user data or error
+ * Purpose: Provides admin interface with comprehensive order list including customer information
+ * for order management, fulfillment tracking, and business analytics
+ */
 export const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -207,7 +232,13 @@ export const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-// Update order to delivered
+/**
+ * Updates order delivery status and timestamp using MongoDB collection operations
+ * @param req - NextApiRequest containing order ID in query parameters
+ * @param res - NextApiResponse for sending updated order data or error
+ * Purpose: Marks order as delivered with timestamp for order fulfillment tracking
+ * and customer notification system
+ */
 export const updateOrderToDelivered = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
@@ -239,7 +270,13 @@ export const updateOrderToDelivered = async (req: NextApiRequest, res: NextApiRe
   }
 };
 
-// Check AliExpress order status
+/**
+ * Checks AliExpress order status with fallback message for manual verification
+ * @param req - NextApiRequest containing order ID in query parameters
+ * @param res - NextApiResponse for sending order status information or error
+ * Purpose: Attempts to retrieve AliExpress order status for dropshipping orders,
+ * provides fallback message when automatic checking is unavailable
+ */
 export const checkAliExpressOrderStatus = async (req: NextApiRequest, res: NextApiResponse) => {
   try {
     await connectDB();
